@@ -16,6 +16,7 @@ import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector3;
+import com.origin.hexasphere.geometry.Hexasphere;
 
 /** First screen of the application. Displayed after the application is created. */
 public class GameScreen implements Screen {
@@ -66,6 +67,9 @@ public class GameScreen implements Screen {
     private ModelBatch batch;
     private PerspectiveCamera cam;
     private ModelInstance modelInstance;
+    private Hexasphere hexasphere;
+    Vector3 hexPos = new Vector3(0f, 0f, 0f);
+    Vector3 camRotationSpeed = new Vector3(0.02f, 0.02f, 0.02f);
 
     @Override
     public void show()
@@ -76,17 +80,20 @@ public class GameScreen implements Screen {
         cam.near = 1f;
         cam.far = 300f;
         cam.update();
-
         batch = new ModelBatch();
+        hexasphere = new Hexasphere();
 
-        modelInstance = createSquare();
+        //modelInstance = createSquare();
         modelInstance = createIcosahedron();
+        //modelInstance = hexasphere.createModel();
     }
 
     @Override
     public void render(float delta) {
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+
+        cam.rotateAround(hexPos, camRotationSpeed, 1f);
 
         //cam.position.x += 0.01f;
         //cam.position.y += 0.01f;
