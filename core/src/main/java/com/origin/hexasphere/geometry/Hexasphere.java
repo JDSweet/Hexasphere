@@ -39,6 +39,7 @@ public class Hexasphere
         points.add(new Point(new Vector3(tao * defaultSize, 0f, -defaultSize)));
         points.add(new Point(new Vector3(-tao * defaultSize, 0f, -defaultSize)));
 
+        //Don't forget to add these faces to the faces array, or you'll be wondering why tf this isn't working.
         new Face(this, (short) 0, (short) 1, (short) 4, true);
         new Face(this, (short) 1, (short) 9, (short) 4, true);
         new Face(icosahedronCorners[4], icosahedronCorners[9], icosahedronCorners[5], false);
