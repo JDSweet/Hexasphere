@@ -10,12 +10,11 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.graphics.g3d.model.Node;
-import com.badlogic.gdx.graphics.g3d.model.data.ModelMeshPart;
+import com.badlogic.gdx.graphics.g3d.model.data.ModelMesh;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.DelaunayTriangulator;
 import com.badlogic.gdx.math.Vector3;
 
 /** First screen of the application. Displayed after the application is created. */
@@ -80,8 +79,8 @@ public class GameScreen implements Screen {
 
         batch = new ModelBatch();
 
-        //modelInstance = new ModelInstance(createIcoModel(createIcosahedronMesh()));
-        modelInstance = test2();
+        modelInstance = createSquare();
+        modelInstance = createIcosahedron();
     }
 
     @Override
@@ -90,9 +89,9 @@ public class GameScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         //cam.position.x += 0.01f;
-        cam.position.y += 0.01f;
+        //cam.position.y += 0.01f;
         //cam.position.z += 0.01f;
-        cam.rotate(1f, 1f, 0f, 1f);
+        //cam.rotate(1f, 1f, 0f, 1f);
 
         //cam.lookAt(0, 0, 0);
         cam.update();
@@ -128,7 +127,7 @@ public class GameScreen implements Screen {
         // Destroy screen's assets here.
     }
 
-    public static ModelInstance test2()
+    public ModelInstance createSquare()
     {
         ModelBuilder modelBuilder = new ModelBuilder();
         Model model = modelBuilder.createBox(1f, 1f, 1f,
@@ -138,62 +137,22 @@ public class GameScreen implements Screen {
         return instance;
     }
 
-    public static ModelInstance testModelInstance()
+    public ModelInstance createIcosahedron()
     {
         ModelBuilder modelBuilder = new ModelBuilder();
-        modelBuilder.begin();
-
-        MeshPartBuilder meshBuilder;
-        meshBuilder = modelBuilder.part("part1",GL20.GL_TRIANGLES, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.ColorUnpacked, new Material());
-        meshBuilder.triangle(new Vector3(0,0,0), Color.RED,
-            new Vector3(0,1,0), Color.BLUE,
-            new Vector3(1,0,0), Color.GREEN);
-
-        Node node1 = modelBuilder.node();
-        node1.id = "node1";
-        node1.translation.set(1, 2, 3);
-        meshBuilder = modelBuilder.part("part2", GL20.GL_TRIANGLES, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal, new Material());
-        meshBuilder.sphere(5, 5, 5, 10, 10);
-
-        Model model = modelBuilder.end();
-        ModelInstance i = new ModelInstance(model);
-        return i;
-    }
-
-    public static Model createIcoModel(Mesh mesh)
-    {
-        Model model;
-        ModelBuilder bldr = new ModelBuilder();
-        bldr.begin();
-        bldr.part(new MeshPart("world_mesh", mesh, 0, 1, GL20.GL_TRIANGLES), new Material());
-        return bldr.end();
-    }
-
-    public static Mesh createIcosahedronMesh()
-    {
-        float phi = (float) ((1.0 + Math.sqrt(5.0)) / 2.0);
-        System.out.println(phi);
-        float[] vertices = {
-            -phi, 1, 0,
-            phi, 1, 0,
-            -1, -phi, 0,
-            1, -phi, 0,
-            0, -1, phi,
-            0, 1, phi,
-            0, -1, -phi,
-            0, 1, -phi,
-            phi, 0, -1,
-            phi, 0, 1,
-            -phi, 0, -1,
-            -phi, 0, 1
-        };
-
         MeshBuilder b = new MeshBuilder();
         b.begin(VertexAttributes.Usage.Position);
         for(int i = 0; i <= vertices.length / 3; i++)
         {
             b.vertex(vertices[i], vertices[i+1], vertices[i+2]);
         }
-        return b.end();
+        for(int i = 0; i < indices.length; i++)
+        {
+            b.index(indices[i]);
+        }
+        Mesh mesh = b.end();
+        modelBuilder.begin();
+        modelBuilder.part("ico", mesh, VertexAttributes.Usage.Position, new Material());
+        return new ModelInstance(modelBuilder.end());
     }
 }
