@@ -14,7 +14,7 @@ In the process of creating this, I've learned a lot about procedural mesh genera
 Additionally, I also encountered a similar project (using JMonkeyEngine), but none of the code was "usable," and it mostly serves as a stylistic inspiration for what I'm going for once I implement the hexagonal tile map. [The project in question is hosted on Sourceforge](https://sourceforge.net/projects/hexmapsphere/).
 
 
-==================================================================================
+-----------------------------------------------------
 
 
 A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
