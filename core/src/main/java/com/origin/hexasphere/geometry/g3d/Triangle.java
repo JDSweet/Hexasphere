@@ -18,9 +18,6 @@ public class Triangle
         this.index1 = idx1;
         this.index2 = idx2;
         this.index3 = idx3;
-        hexasphere.getPointAt(index1).setIndex(index1);
-        hexasphere.getPointAt(index1).setIndex(index2);
-        hexasphere.getPointAt(index1).setIndex(index3);
     }
 
     public void subdivide()
@@ -30,14 +27,17 @@ public class Triangle
         Point p2 = hexasphere.getPointAt(index2);
         Point p3 = hexasphere.getPointAt(index3);
         Point[] oldPoints = new Point[] {p1, p2, p3};
+        projectToSphere(p1.getPosition(), hexasphere.getCenter());
+        projectToSphere(p2.getPosition(), hexasphere.getCenter());
+        projectToSphere(p3.getPosition(), hexasphere.getCenter());
 
         //The three new points.
         Point p4 = getMidPoint(hexasphere.getPointAt(index1), hexasphere.getPointAt(index2));
         Point p5 = getMidPoint(hexasphere.getPointAt(index1), hexasphere.getPointAt(index3));
         Point p6 = getMidPoint(hexasphere.getPointAt(index2), hexasphere.getPointAt(index3));
-        normalize(p4.getPosition(), hexasphere.getCenter());
-        normalize(p5.getPosition(), hexasphere.getCenter());
-        normalize(p6.getPosition(), hexasphere.getCenter());
+        projectToSphere(p4.getPosition(), hexasphere.getCenter());
+        projectToSphere(p5.getPosition(), hexasphere.getCenter());
+        projectToSphere(p6.getPosition(), hexasphere.getCenter());
 
         Point[] newPoints = new Point[] {p4, p5, p6};
         for(int i = 0; i < newPoints.length; i++)
@@ -61,16 +61,16 @@ public class Triangle
         return new Point((x1 + x2)/2f, (y1 + y2)/2f, (z1 + z2) / 2f);
     }
 
-    private void normalize(Vector3 objVector, Vector3 centerVector)
+    private void projectToSphere(Vector3 objVector, Vector3 centerVector)
     {
         //Magnitude = sqrt((x₁ - x₀)² + (y₁ - y₀)² + (z₁ - z₀)²)
-        float xDistance = (float)(Math.pow((double)(objVector.x-centerVector.x), 2d));
-        float yDistance = (float)(Math.pow((double)(objVector.y-centerVector.y), 2d));
-        float zDistance = (float)(Math.pow((double)(objVector.z-centerVector.z), 2d));
-        float magnitude = (float)Math.sqrt((xDistance + yDistance + zDistance)) / 1.95f;
-        objVector.x /= magnitude * hexasphere.getRadius();
-        objVector.y /= magnitude * hexasphere.getRadius();
-        objVector.z /= magnitude * hexasphere.getRadius();
+        float xDistance = (float)(Math.pow((objVector.x-centerVector.x), 2d));
+        float yDistance = (float)(Math.pow((objVector.y-centerVector.y), 2d));
+        float zDistance = (float)(Math.pow((objVector.z-centerVector.z), 2d));
+        float magnitude = (float)Math.sqrt((xDistance + yDistance + zDistance));
+        objVector.x /= magnitude / hexasphere.getRadius();
+        objVector.y /= magnitude / hexasphere.getRadius();
+        objVector.z /= magnitude / hexasphere.getRadius();
     }
 
     public Point getPoint1()

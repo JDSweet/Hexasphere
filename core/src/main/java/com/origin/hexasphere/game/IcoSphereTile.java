@@ -15,11 +15,18 @@ public class IcoSphereTile
     {
         this.world = world;
         this.geometryIndex = point.getIndex();
+        this.type = tileType;
+        point.setColor(type.getColor());
     }
 
     public Point getPoint()
     {
         return world.getPointAt(geometryIndex);
+    }
+
+    public Color getColor()
+    {
+        return type.getColor();
     }
 
 

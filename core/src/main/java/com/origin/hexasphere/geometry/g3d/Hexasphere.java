@@ -14,6 +14,8 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ArrayMap;
+import com.badlogic.gdx.utils.ObjectFloatMap;
 import com.origin.hexasphere.game.IcoSphereTile;
 
 //Read THIS: https://web.archive.org/web/20180808214504/http://donhavey.com:80/blog/tutorials/tutorial-3-the-icosahedron-sphere/
@@ -25,17 +27,25 @@ public class Hexasphere
     private Array<Point> points;
     private Array<Triangle> faces;
     private Model model;
-    private float radius = 1f;
+    private float radius = 3f;
     private int subdivisions;
+
+    ArrayMap<Float, ArrayMap<Float, IcoSphereTile>> latLon;
 
     public Hexasphere(int subdivisions)
     {
         points = new Array<Point>(true, 12);
         faces = new Array<Triangle>(true, 20);
+        this.latLon = new ArrayMap<Float, ArrayMap<Float, IcoSphereTile>>();
         this.center = new Vector3(0f, 0f, 0f);
         this.subdivisions = subdivisions;
+
         createIcosahedron();
+
         subdivide(this.subdivisions);
+
+        tileIcosphere();
+
         buildMesh();
     }
 
@@ -119,13 +129,19 @@ public class Hexasphere
         }
     }
 
-    //This iterates through the list of points and creates a tile at their location.
+    // This iterates through the list of points and creates a tile at their location. By default, their location in the
+    // array will be latLonResolution * radius.
+    // latLonResolution =
     public void tileIcosphere()
     {
-        IcoSphereTile[] tiles = new IcoSphereTile[points.size];
-        for(int i = 0; i < tiles.length; i++)
+        for(int i = 0; i < points.size; i++)
         {
-            tiles[i] = new IcoSphereTile(this, points.get(i), IcoSphereTile.TileType.GRASS);
+            Point p = points.get(i);
+            float polarAngle = (float)Math.acos(p.getPosition().z / getRadius());
+            float azimuthAngle = (float)Math.atan2(p.getPosition().y, p.getPosition().x);
+            float lat = 90f - polarAngle;
+            float lon = azimuthAngle;
+            //IcoSphereTile(this, points.get(i), IcoSphereTile.TileType.GRASS);
         }
     }
 
@@ -156,8 +172,12 @@ public class Hexasphere
         p1Idx = (short)addPointIfDoesNotExist(p1);
         p2Idx = (short)addPointIfDoesNotExist(p2);
         p3Idx = (short)addPointIfDoesNotExist(p3);
-        //Gdx.app.log("Triangle Debug", "" + p1Idx);
-        faces.add(new Triangle(this, p1Idx, p2Idx, p3Idx));
+
+        Triangle tri = new Triangle(this, p1Idx, p2Idx, p3Idx);
+        faces.add(tri);
+        getPointAt(tri.getIdx1()).setIndex(tri.getIdx1());
+        getPointAt(tri.getIdx2()).setIndex(tri.getIdx2());
+        getPointAt(tri.getIdx3()).setIndex(tri.getIdx3());
     }
 
     //This doesn't remove vertices, it just removes the specific triangle/collection of indices that form the triangle.
