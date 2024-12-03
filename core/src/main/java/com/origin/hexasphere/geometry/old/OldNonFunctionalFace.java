@@ -3,14 +3,14 @@
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
-public class Face
+public class Triangle
 {
     private String _id;
     private Array<Point> _points;
     private static int maxFaceID = 0;
 
     //trackFaceInPoints default = true
-    public Face(Point point1, Point point2, Point point3, boolean trackFaceInPoints)
+    public Triangle(Point point1, Point point2, Point point3, boolean trackFaceInPoints)
     {
         _id = "" + maxFaceID++;
 
@@ -68,7 +68,7 @@ public class Face
         return _points.Where(facePoint => facePoint.ID != point.ID).ToList();
     }
 
-    public boolean IsAdjacentToFace(Face face)
+    public boolean IsAdjacentToFace(Triangle face)
     {
         Array<String> thisFaceIds = _points.Select(point => point.ID).ToList();
         Array<String> otherFaceIds = face.Points.Select(point => point.ID).ToList();

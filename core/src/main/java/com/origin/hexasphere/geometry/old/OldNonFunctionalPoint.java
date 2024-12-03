@@ -7,7 +7,7 @@ public class Point
 {
     private final String _id;
     private final Vector3 _position;
-    private Array<Face> _faces;
+    private Array<Triangle> _faces;
 
     private static final float PointComparisonAccuracy = 0.0001f;
     private static int maxID = 0;
@@ -16,12 +16,12 @@ public class Point
     {
         _id = "" + maxID++;
         _position = position;
-        _faces = new Array<Face>();
+        _faces = new Array<Triangle>();
     }
 
-    private Point(Vector3 position, String id, Array<Face> faces)
+    private Point(Vector3 position, String id, Array<Triangle> faces)
     {
-        _faces = new Array<Face>();
+        _faces = new Array<Triangle>();
 
         _id = id;
         _position = position;
@@ -38,12 +38,12 @@ public class Point
         return _id;
     }
 
-    public Array<Face> getFaces()
+    public Array<Triangle> getFaces()
     {
         return _faces;
     }
 
-    public void AssignFace(Face face)
+    public void AssignFace(Triangle face)
     {
         _faces.add(face);
     }
@@ -91,17 +91,17 @@ public class Point
         return point;
     }
 
-    public Array<Face> GetOrderedFaces()
+    public Array<Triangle> GetOrderedFaces()
     {
         if (_faces.size == 0) return _faces;
-        Array<Face> orderedList = new Array<Face>();
+        Array<Triangle> orderedList = new Array<Triangle>();
         orderedList.add(_faces.get(0));
 
-        Face currentFace = orderedList.get(0);
+        Triangle currentFace = orderedList.get(0);
         while (orderedList.size < _faces.size)
         {
             Array<String> existingIds = this.selectAllFacesWithIDs(orderedList); //orderedList.Select(face => face.ID).ToList();
-            Face neighbor = getNewNeighbor(existingIds, _faces); //First(face => !existingIds.Contains(face.ID) && face.IsAdjacentToFace(currentFace));
+            Triangle neighbor = getNewNeighbor(existingIds, _faces); //First(face => !existingIds.Contains(face.ID) && face.IsAdjacentToFace(currentFace));
             currentFace = neighbor;
             orderedList.add(currentFace);
         }
@@ -109,9 +109,9 @@ public class Point
         return orderedList;
     }
 
-    private Face getNewNeighbor(Array<String>existingIds, Array<Face> faces)
+    private Triangle getNewNeighbor(Array<String>existingIds, Array<Triangle> faces)
     {
-        for(Face face : faces)
+        for(Triangle face : faces)
         {
             if(!existingIds.contains(face.getID(), false) && face.IsAdjacentToFace(currentFace))
             {
@@ -120,10 +120,10 @@ public class Point
         }
     }
 
-    private Array<String> selectAllFaceIds(Array<Face> orderedList)
+    private Array<String> selectAllFaceIds(Array<Triangle> orderedList)
     {
         Array<String> retval = new Array<String>();
-        for(Face face : orderedList)
+        for(Triangle face : orderedList)
         {
             retval.add(face.toString());
         }

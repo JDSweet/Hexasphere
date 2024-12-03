@@ -1,6 +1,7 @@
 package com.origin.hexasphere.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.Material;
@@ -68,8 +69,6 @@ public class GameScreen implements Screen {
     private PerspectiveCamera cam;
     private ModelInstance modelInstance;
     private Hexasphere hexasphere;
-    Vector3 hexPos = new Vector3(0f, 0f, 0f);
-    Vector3 camRotationSpeed = new Vector3(0.02f, 0.02f, 0.02f);
 
     @Override
     public void show()
@@ -84,16 +83,32 @@ public class GameScreen implements Screen {
         hexasphere = new Hexasphere();
 
         //modelInstance = createSquare();
-        modelInstance = createIcosahedron();
-        //modelInstance = hexasphere.createModel();
+        //modelInstance = createIcosahedron();
+        modelInstance = hexasphere.createModel();
+        //modelInstance = createIco2();
     }
+
+
+    Vector3 hexPos = new Vector3(0f, 0f, 0f);
+    Vector3 wCamRotationSpeed = new Vector3(0.0f, 0.0f, 0.02f);
+    Vector3 sCamRotationSpeed = new Vector3(0f, 0f, -0.02f);
+    Vector3 aCamRotationSpeed = new Vector3(-0.02f, 0f, 0f);
+    Vector3 dCamRotationSpeed = new Vector3(0.02f, 0f, 0f);
 
     @Override
     public void render(float delta) {
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
-        cam.rotateAround(hexPos, camRotationSpeed, 1f);
+        //cam.rotateAround(hexPos, camRotationSpeed, 1f);
+        if(Gdx.input.isKeyPressed(Input.Keys.W))
+            cam.rotateAround(hexPos, wCamRotationSpeed, 1f);
+        if(Gdx.input.isKeyPressed(Input.Keys.A))
+            cam.rotateAround(hexPos, aCamRotationSpeed, 1f);
+        if(Gdx.input.isKeyPressed(Input.Keys.D))
+            cam.rotateAround(hexPos, dCamRotationSpeed, 1f);
+        if(Gdx.input.isKeyPressed(Input.Keys.S))
+            cam.rotateAround(hexPos, sCamRotationSpeed, 1f);
 
         //cam.position.x += 0.01f;
         //cam.position.y += 0.01f;
@@ -144,7 +159,69 @@ public class GameScreen implements Screen {
         return instance;
     }
 
-    public ModelInstance createIcosahedron()
+    public ModelInstance createIco2()
+    {
+        float[] r_verts = new float[]
+        {
+            -1, phi, 0, 1, phi, 0, -1, -phi, 0, 1, -phi, 0,
+            0, -1, phi, 0, 1, phi, 0, -1, -phi, 0, 1, -phi,
+            phi, 0, -1, phi, 0, 1, -phi, 0, -1, -phi, 0, 1
+        };
+        short[] r_indices = new short[]
+        {
+            0, 11, 5, 0, 5, 1, 0, 1, 7, 0, 7, 10, 0, 10, 11,
+            11, 10, 2, 5, 11, 4, 1, 5, 9, 7, 1, 8, 10, 7, 6,
+            3, 9, 4, 3, 4, 2, 3, 2, 6, 3, 6, 8, 3, 8, 9,
+            9, 8, 1, 4, 9, 5, 2, 4, 11, 6, 2, 10, 8, 6, 7
+        };
+
+        //r_indices = reverseArr(r_indices);
+
+        ModelBuilder modelBuilder = new ModelBuilder();
+        MeshBuilder b = new MeshBuilder();
+        b.begin(VertexAttributes.Usage.Position);
+        for(int i = 0; i <= r_verts.length / 3; i++)
+        {
+            b.vertex(r_verts[i], r_verts[i+1], r_verts[i+2]);
+        }
+        for(int i = 0; i < r_indices.length; i++)
+        {
+            b.index(r_indices[i]);
+        }
+        Mesh mesh = b.end();
+        modelBuilder.begin();
+        modelBuilder.part("ico", mesh, VertexAttributes.Usage.Position, new Material());
+        return new ModelInstance(modelBuilder.end());
+    }
+
+    short[] reverseArr(short[] input)
+    {
+        short[] output = new short[input.length];
+        //short[] curTri = new short[3];
+        for(int oi = 0; oi < output.length-3; oi += 3)
+        {
+            output[oi] = input[input.length-1-oi];
+        }
+        return output;
+    }
+
+    short[] reverseTriangles(short[] input)
+    {
+        short[] output = new short[input.length];
+        //short[] curTri = new short[3];
+        for(int oi = 0; oi < output.length-3; oi += 3)
+        {
+            short idx1 = (short)oi;
+            short idx2 = (short)(oi+1);
+            short idx3 = (short)(oi+2);
+            output[oi] = idx3;
+            output[oi+1] = idx2;
+            output[oi+2] = idx1;
+        }
+        return output;
+    }
+
+    public ModelInstance createIcosahedron1()
     {
         ModelBuilder modelBuilder = new ModelBuilder();
         MeshBuilder b = new MeshBuilder();
