@@ -1,9 +1,6 @@
-package com.origin.hexasphere.geometry;
+package com.origin.hexasphere.geometry.g3d;
 
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.Array;
-
-import static java.lang.Math.sqrt;
 
 public class Triangle
 {
@@ -21,6 +18,9 @@ public class Triangle
         this.index1 = idx1;
         this.index2 = idx2;
         this.index3 = idx3;
+        hexasphere.getPointAt(index1).setIndex(index1);
+        hexasphere.getPointAt(index1).setIndex(index2);
+        hexasphere.getPointAt(index1).setIndex(index3);
     }
 
     public void subdivide()

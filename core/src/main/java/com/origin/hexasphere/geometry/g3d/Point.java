@@ -1,4 +1,4 @@
-package com.origin.hexasphere.geometry;
+package com.origin.hexasphere.geometry.g3d;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector3;
@@ -8,6 +8,7 @@ public class Point
 {
     private Vector3 position;
     private Color color;
+    private int index;
 
     public Point(float x, float y, float z)
     {
@@ -23,6 +24,16 @@ public class Point
     {
         this.position = position;
         this.color = color;
+    }
+
+    public void setIndex(int idx)
+    {
+        this.index = idx;
+    }
+
+    public int getIndex()
+    {
+        return this.index;
     }
 
     public Vector3 getPosition()

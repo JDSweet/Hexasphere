@@ -10,10 +10,9 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Logger;
-import com.origin.hexasphere.geometry.Hexasphere;
+import com.origin.hexasphere.geometry.g3d.Hexasphere;
 
 /** First screen of the application. Displayed after the application is created. */
 public class GameScreen implements Screen
@@ -39,13 +38,11 @@ public class GameScreen implements Screen
         cam.far = 300f;
         cam.update();
         batch = new ModelBatch();
-        hexasphere = new Hexasphere();
-        hexasphere.subdivide(6);
-        hexasphere.buildMesh();
-        hexasphere.debugMesh();
+
+        hexasphere = new Hexasphere(5);
+        hexasphere.debugMesh(true, true);
         modelInstance = hexasphere.instance();
     }
-
 
     Vector3 hexPos = new Vector3(0f, 0f, 0f);
     Vector3 wCamRotationSpeed = new Vector3(0.0f, 0.0f, 0.02f);

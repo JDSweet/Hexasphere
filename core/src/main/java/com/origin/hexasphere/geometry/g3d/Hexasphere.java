@@ -1,4 +1,4 @@
-package com.origin.hexasphere.geometry;
+package com.origin.hexasphere.geometry.g3d;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -14,6 +14,7 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import com.origin.hexasphere.game.IcoSphereTile;
 
 //Read THIS: https://web.archive.org/web/20180808214504/http://donhavey.com:80/blog/tutorials/tutorial-3-the-icosahedron-sphere/
 
@@ -25,13 +26,17 @@ public class Hexasphere
     private Array<Triangle> faces;
     private Model model;
     private float radius = 1f;
+    private int subdivisions;
 
-    public Hexasphere()
+    public Hexasphere(int subdivisions)
     {
         points = new Array<Point>(true, 12);
         faces = new Array<Triangle>(true, 20);
         this.center = new Vector3(0f, 0f, 0f);
+        this.subdivisions = subdivisions;
         createIcosahedron();
+        subdivide(this.subdivisions);
+        buildMesh();
     }
 
     //Based on the following articles:
@@ -114,16 +119,34 @@ public class Hexasphere
         }
     }
 
+    //This iterates through the list of points and creates a tile at their location.
+    public void tileIcosphere()
+    {
+        IcoSphereTile[] tiles = new IcoSphereTile[points.size];
+        for(int i = 0; i < tiles.length; i++)
+        {
+            tiles[i] = new IcoSphereTile(this, points.get(i), IcoSphereTile.TileType.GRASS);
+        }
+    }
+
     public void subdivide(int times)
     {
-        var newFaces = new Array<Triangle>(faces);
+        // We are caching the old array of triangles because
+        // removeFace (called in the Triangle.subdivide() method) mutates our main array of triangles ("faces").
+        // If we just use "faces," then faces are removed and added during the loop,
+        // leading to infinite regression
+        // (size is always increasing faster than i is incrementing - by a factor
+        // of 4 new triangles per triangle iterated through)
+        // This is super inefficient for larger meshes/more subdivisions.
+        // We should be caching only the new triangles we create, and adding them to the main faces
         for(int i = 0; i < times; i++)
         {
+            var newFaces = new Array<Triangle>(faces);
             for(int j = 0; j < newFaces.size; j++)
             {
                 newFaces.get(j).subdivide();
             }
-            newFaces = new Array<Triangle>(faces);
+            //newFaces = new Array<Triangle>(faces);
         }
     }
 
@@ -182,8 +205,8 @@ public class Hexasphere
         return points.get(index);
     }
 
-    //Adds the point and returns its index if it does not exist.
-    //Returns the index of the point if it does exist.
+    // Adds the point and returns its index if it does not exist.
+    // Returns the index of the point if it does exist.
     public int addPointIfDoesNotExist(Point point)
     {
         int retval = -1;
@@ -217,19 +240,20 @@ public class Hexasphere
         return this.center;
     }
 
-    public void debugMesh()
+    public void debugMesh(boolean verts, boolean faces)
     {
         String vertsDebug = "\n";
         String facesDebug = "\n";
-        for(Point p : points)
-        {
-            vertsDebug += "point [" + p.getPosition().toString() + "]\n";
-        }
-        vertsDebug += points.size;
-        for(Triangle f : faces)
-        {
-            facesDebug += "face [" + f.toString() + "]\n";
-        }
+
+        if(verts)
+            for(Point p : points)
+                vertsDebug += "point [" + p.getPosition().toString() + "]\n";
+        vertsDebug += "Vert Count: " + points.size;
+        if(faces)
+            for(Triangle f : this.faces)
+                facesDebug += "face [" + f.toString() + "]\n";
+        facesDebug += "Face Count: " + this.faces.size;
         Gdx.app.log("Vertices", vertsDebug);
+        Gdx.app.log("Faces", facesDebug);
     }
 }
