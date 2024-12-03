@@ -39,7 +39,7 @@ public class GameScreen implements Screen
         batch = new ModelBatch();
 
         hexasphere = new Hexasphere();
-        hexasphere.subdivide(4);
+        hexasphere.subdivide(5);
         hexasphere.buildMesh();
         hexasphere.debugMesh();
         modelInstance = hexasphere.instance();
