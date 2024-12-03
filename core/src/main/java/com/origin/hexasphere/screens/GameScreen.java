@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Logger;
 import com.origin.hexasphere.geometry.Hexasphere;
@@ -24,6 +25,7 @@ public class GameScreen implements Screen
     private PerspectiveCamera cam;
     private ModelInstance modelInstance;
     private Hexasphere hexasphere;
+    //private Vector3 facing;
 
     @Override
     public void show()
@@ -37,9 +39,8 @@ public class GameScreen implements Screen
         cam.far = 300f;
         cam.update();
         batch = new ModelBatch();
-
         hexasphere = new Hexasphere();
-        hexasphere.subdivide(5);
+        hexasphere.subdivide(6);
         hexasphere.buildMesh();
         hexasphere.debugMesh();
         modelInstance = hexasphere.instance();
@@ -51,6 +52,11 @@ public class GameScreen implements Screen
     Vector3 sCamRotationSpeed = new Vector3(0f, 0f, -0.02f);
     Vector3 aCamRotationSpeed = new Vector3(-0.02f, 0f, 0f);
     Vector3 dCamRotationSpeed = new Vector3(0.02f, 0f, 0f);
+
+    private Vector3 newDir = new Vector3();
+    private float camZoomAmnt = 1f;
+    private float minCamZoom = 4f;
+    private float maxCamZoom = 12f;
 
     @Override
     public void render(float delta)
@@ -68,7 +74,14 @@ public class GameScreen implements Screen
         if(Gdx.input.isKeyPressed(Input.Keys.S))
             cam.rotateAround(hexPos, sCamRotationSpeed, 1f);
         if(Gdx.input.isKeyPressed(Input.Keys.ENTER))
-            cam.position.set(cam.position.x+cam.direction.x, cam.position.y+cam.direction.y, cam.position.z-+cam.direction.z);
+            if(hexasphere.getCenter().dst(cam.position) > minCamZoom)
+                cam.position.add(newDir.set(cam.direction).scl(camZoomAmnt));
+        if(Gdx.input.isKeyPressed(Input.Keys.BACKSPACE))
+            if(hexasphere.getCenter().dst(cam.position) < maxCamZoom)
+                cam.position.add(newDir.set(cam.direction).scl(-camZoomAmnt));
+        cam.lookAt(0f, 0f, 0f);
+            //cam.position.set(cam.position.x+cam.direction.x, cam.position.y+cam.direction.y, cam.position.z-+cam.direction.z);
+
 
         //cam.position.x += 0.01f;
         //cam.position.y += 0.01f;
