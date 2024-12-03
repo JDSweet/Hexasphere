@@ -22,6 +22,7 @@ public class IcoSphereTile
         return world.getPointAt(geometryIndex);
     }
 
+
     public enum TileType implements ColorHolder
     {
         GRASS
