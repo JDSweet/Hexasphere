@@ -34,4 +34,16 @@ public class Point
     {
         return this.color;
     }
+
+    public void setColor(Color c)
+    {
+        this.color = c;
+    }
+
+    @Override
+    public boolean equals(Object other)
+    {
+        Point otherPnt = (Point)other;
+        return getPosition().epsilonEquals(otherPnt.getPosition(), 0.00000f);
+    }
 }

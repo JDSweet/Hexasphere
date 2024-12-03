@@ -12,142 +12,70 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
 //Read THIS: https://web.archive.org/web/20180808214504/http://donhavey.com:80/blog/tutorials/tutorial-3-the-icosahedron-sphere/
 
+
 public class Hexasphere
 {
+    private Vector3 center;
     private Array<Point> points;
     private Array<Triangle> faces;
     private Model model;
+    private float radius = 1f;
 
     public Hexasphere()
     {
         points = new Array<Point>(true, 12);
         faces = new Array<Triangle>(true, 20);
-        //createIco1();
-        //createIco2();
-        //createIco3();
-        //createIco4();
-        createIco5();
+        this.center = new Vector3(0f, 0f, 0f);
+        createIcosahedron();
     }
 
-    //Based on this article: http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
-    /*public void createIco1()
-    {
-        float tao = (float) (1 + Math.sqrt(5d)) / 2f; //MathUtils.PI / 2;
-        //int offset = 0; //Because 4 = the number of color floats.
-        float defaultSize = 1f; //Was 100f
-
-        points.add(new Point(-1,  tao,  0, Color.RED));
-        points.add(new Point( 1,  tao,  0, Color.GREEN));
-        points.add(new Point(-1, -tao,  0, Color.BLUE));
-        points.add(new Point( 1, -tao,  0, Color.LIGHT_GRAY));
-
-        points.add(new Point( 0, -1,  tao, Color.RED));
-        points.add(new Point( 0,  1,  tao, Color.GREEN));
-        points.add(new Point( 0, -1, -tao, Color.BLUE));
-        points.add(new Point( 0,  1, -tao, Color.LIGHT_GRAY));
-
-        points.add(new Point( tao,  0, -1, Color.RED));
-        points.add(new Point( tao,  0,  1, Color.GREEN));
-        points.add(new Point(-tao,  0, -1, Color.BLUE));
-        points.add(new Point(-tao,  0,  1, Color.LIGHT_GRAY));
-
-        //Don't forget to add these faces to the faces array, or you'll be wondering why tf this isn't working.
-        // 5 faces around point 0
-        faces.add(new Triangle(this, 0, 11, 5, false));
-        faces.add(new Triangle(this, 0, 5, 1, false));
-        faces.add(new Triangle(this, 0, 1, 7, false));
-        faces.add(new Triangle(this, 0, 7, 10, false));
-        faces.add(new Triangle(this, 0, 10, 11, false));
-
-        // 5 adjacent faces
-        faces.add(new Triangle(this, 1, 5, 9, false));
-        faces.add(new Triangle(this, 5, 11, 4, false));
-        faces.add(new Triangle(this, 11, 10, 2, false));
-        faces.add(new Triangle(this, 10, 7, 6, false));
-        faces.add(new Triangle(this, 7, 1, 8, false));
-
-        // 5 faces around point 3
-        faces.add(new Triangle(this, 3, 9, 4, false));
-        faces.add(new Triangle(this, 3, 4, 2, false));
-        faces.add(new Triangle(this, 3, 2, 6, false));
-        faces.add(new Triangle(this, 3, 6, 8, false));
-        faces.add(new Triangle(this, 3, 8, 9, false));
-
-        // 5 adjacent faces
-        faces.add(new Triangle(this, 4, 9, 5, false));
-        faces.add(new Triangle(this, 2, 4, 11, false));
-        faces.add(new Triangle(this, 6, 2, 10, false));
-        faces.add(new Triangle(this, 8, 6, 7, false));
-        faces.add(new Triangle(this, 9, 8, 1, false));
-    }*/
-
-    //https://www.classes.cs.uchicago.edu/archive/2003/fall/23700/docs/handout-04.pdf
-    public void createIco4()
-    {
-        float t = (float)(1.0f + Math.sqrt(5.0f)) / 2.0f;
-
-        points.add(new Point(t, 1f, 0f));
-        points.add(new Point(-t, 1f, 0f));
-        points.add(new Point(t, -1f, 0f));
-        points.add(new Point(-t, -1f, 0f));
-
-        points.add(new Point(1f, 0f, t));
-        points.add(new Point(1f, 0f, -t));
-        points.add(new Point(-1f, 0f, t));
-        points.add(new Point(-1f, 0f, -t));
-
-        points.add(new Point(0f, t, 1f));
-        points.add(new Point(0f, -t, 1f));
-        points.add(new Point(0f, t, -1f));
-        points.add(new Point(0f, -t, -1f));
-
-        faces.add(new Triangle(this, 0, 8, 4));
-        faces.add(new Triangle(this, 0, 5, 10));
-        faces.add(new Triangle(this, 2, 4, 9));
-        faces.add(new Triangle(this, 2, 11, 5));
-        faces.add(new Triangle(this, 1, 6, 8));
-
-        faces.add(new Triangle(this, 1, 10, 7));
-        faces.add(new Triangle(this, 3, 9, 6));
-        faces.add(new Triangle(this, 3, 7, 11));
-        faces.add(new Triangle(this, 0, 10, 8));
-        faces.add(new Triangle(this, 1, 8, 10));
-
-        faces.add(new Triangle(this, 2, 9, 11));
-        faces.add(new Triangle(this, 3, 9, 11));
-        faces.add(new Triangle(this, 4, 2, 0));
-        faces.add(new Triangle(this, 5, 0, 2));
-        faces.add(new Triangle(this, 6, 1, 3));
-
-        faces.add(new Triangle(this, 7, 3, 1));
-        faces.add(new Triangle(this, 8, 6, 4));
-        faces.add(new Triangle(this, 9, 4, 6));
-        faces.add(new Triangle(this, 10, 5, 7));
-        faces.add(new Triangle(this, 11, 7, 5));
-    }
-
-    private void createIco5()
+    //Based on the following articles:
+    //      1. http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
+    //      2. https://www.classes.cs.uchicago.edu/archive/2003/fall/23700/docs/handout-04.pdf
+    private void createIcosahedron()
     {
         float tao = 1.61803399f; //(float)(1.0f + Math.sqrt(5.0f)) / 2.0f;
+
+        Color[] colors = new Color[] {
+            Color.GREEN,
+            Color.RED,
+            Color.BLUE,
+            Color.BROWN,
+            Color.CHARTREUSE,
+            Color.CORAL,
+            Color.CYAN,
+            Color.DARK_GRAY,
+            Color.FIREBRICK,
+            Color.FOREST,
+            Color.GOLD,
+            Color.LIME,
+            Color.LIGHT_GRAY,
+            Color.OLIVE,
+            Color.SKY,
+            Color.SALMON
+        };
+
         Point[] pnts = new Point[]
         {
-            new Point(3, tao * 3, 0),
-            new Point(-3, tao * 3, 0),
-            new Point(3,-tao * 3,0),
-            new Point(-3,-tao * 3,0),
-            new Point(0,3,tao * 3),
-            new Point(0,-3,tao * 3),
-            new Point(0,3,-tao * 3),
-            new Point(0,-3,-tao * 3),
-            new Point(tao * 3,0,3),
-            new Point(-tao * 3,0,3),
-            new Point(tao * 3,0,-3),
-            new Point(-tao * 3,0,-3)
+            new Point(radius, tao * radius, 0),
+            new Point(-radius, tao * radius, 0),
+            new Point(radius,-tao * radius,0),
+            new Point(-radius,-tao * radius,0),
+            new Point(0, radius,tao * radius),
+            new Point(0,-radius,tao * radius),
+            new Point(0, radius,-tao * radius),
+            new Point(0,-radius,-tao * radius),
+            new Point(tao * radius,0, radius),
+            new Point(-tao * radius,0, radius),
+            new Point(tao * radius,0,-radius),
+            new Point(-tao * radius,0,-radius)
         };
+
         Triangle[] fces = new Triangle[]
         {
             new Triangle(this, 0, 1, 4, false),
@@ -172,8 +100,11 @@ public class Hexasphere
             new Triangle(this, 9, 1, 11, false)
         };
 
-        for(Point p : pnts)
+        for(int i = 0; i < pnts.length; i++)
         {
+            Point p = pnts[i];
+            Color c = colors[i];
+            p.setColor(c);
             points.add(p);
         }
 
@@ -183,34 +114,39 @@ public class Hexasphere
         }
     }
 
-    public void buildMesh()
+    public void subdivide(int times)
     {
-
+        var newFaces = new Array<Triangle>(faces);
+        for(int i = 0; i < times; i++)
+        {
+            for(int j = 0; j < newFaces.size; j++)
+            {
+                newFaces.get(j).subdivide();
+            }
+            newFaces = new Array<Triangle>(faces);
+        }
     }
 
-    //Thank the Gods for this brave soul: https://gamedev.stackexchange.com/a/212473/60136
-    public ModelInstance createModel()
+    public void addRawTriangle(Point p1, Point p2, Point p3)
+    {
+        short p1Idx, p2Idx, p3Idx;
+        p1Idx = (short)addPointIfDoesNotExist(p1);
+        p2Idx = (short)addPointIfDoesNotExist(p2);
+        p3Idx = (short)addPointIfDoesNotExist(p3);
+        //Gdx.app.log("Triangle Debug", "" + p1Idx);
+        faces.add(new Triangle(this, p1Idx, p2Idx, p3Idx));
+    }
+
+    //This doesn't remove vertices, it just removes the specific triangle/collection of indices that form the triangle.
+    public void removeTriangle(Triangle tri)
+    {
+        this.faces.removeValue(tri, true);
+    }
+
+    public void buildMesh()
     {
         ModelBuilder modelBuilder = new ModelBuilder();
         MeshBuilder b = new MeshBuilder();
-        Color[] colors = new Color[] {
-            Color.GREEN,
-            Color.RED,
-            Color.BLUE,
-            Color.BROWN,
-            Color.CHARTREUSE,
-            Color.CORAL,
-            Color.CYAN,
-            Color.DARK_GRAY,
-            Color.FIREBRICK,
-            Color.FOREST,
-            Color.GOLD,
-            Color.LIME,
-            Color.LIGHT_GRAY,
-            Color.OLIVE,
-            Color.SKY,
-            Color.SALMON
-        };
 
         b.begin(VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal |VertexAttributes.Usage.ColorUnpacked);
         for(int i = 0; i < points.size; i++)
@@ -220,7 +156,7 @@ public class Hexasphere
             b.vertex(
                 point.getPosition(),
                 point.getPosition(),
-                colors[i],
+                point.getColor(),
                 new Vector2(1, 1));
         }
         for(int i = 0; i < faces.size; i++)
@@ -233,6 +169,11 @@ public class Hexasphere
         modelBuilder.begin();
         modelBuilder.part("world", mesh,  GL20.GL_TRIANGLES, new Material(ColorAttribute.createDiffuse(Color.WHITE)));
         this.model = modelBuilder.end();
+    }
+
+    //Thank the Gods for this brave soul: https://gamedev.stackexchange.com/a/212473/60136
+    public ModelInstance instance()
+    {
         return new ModelInstance(model);
     }
 
@@ -241,18 +182,54 @@ public class Hexasphere
         return points.get(index);
     }
 
+    //Adds the point and returns its index if it does not exist.
+    //Returns the index of the point if it does exist.
+    public int addPointIfDoesNotExist(Point point)
+    {
+        int retval = -1;
+        for(int i = 0; i < points.size; i++)
+        {
+            Point other = points.get(i);
+            if(other == point || other.equals(point))
+            {
+                retval = i;
+                //Gdx.app.debug("Hexasphere", "Point " + point.getPosition() + " exists! Returning " + retval);
+                break;
+            }
+        }
+        if(retval == -1)
+        {
+            points.add(point);
+            retval = points.size - 1;
+            //Gdx.app.debug("Hexasphere", "Point " + point.getPosition() + " does not exist! Returning " + retval);
+        }
+
+        return retval;
+    }
+
+    public float getRadius()
+    {
+        return this.radius;
+    }
+
+    public Vector3 getCenter()
+    {
+        return this.center;
+    }
+
     public void debugMesh()
     {
-        String vertsDebug = "";
-        String facesDebug = "";
+        String vertsDebug = "\n";
+        String facesDebug = "\n";
         for(Point p : points)
         {
             vertsDebug += "point [" + p.getPosition().toString() + "]\n";
         }
+        vertsDebug += points.size;
         for(Triangle f : faces)
         {
             facesDebug += "face [" + f.toString() + "]\n";
         }
-        Gdx.app.log("Vertices", "");
+        Gdx.app.log("Vertices", vertsDebug);
     }
 }
