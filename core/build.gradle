@@ -9,6 +9,7 @@ dependencies {
   api "com.github.payne911:PieMenu:$pieMenuVersion"
   api "com.sudoplay.joise:joise:$joiseVersion"
   api "space.earlygrey:shapedrawer:$shapeDrawerVersion"
+  api 'it.unimi.dsi:fastutil:8.5.11' // Or the latest version
 
   if(enableGraalNative == 'true') {
     implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"

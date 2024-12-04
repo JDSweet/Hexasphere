@@ -51,7 +51,7 @@ public class GameScreen implements Screen
     Vector3 dCamRotationSpeed = new Vector3(0.02f, 0f, 0f);
 
     private Vector3 newDir = new Vector3();
-    private float camZoomAmnt = 1f;
+    private float camZoomAmnt = 0.5f;
     private float minCamZoom = 4f;
     private float maxCamZoom = 12f;
 

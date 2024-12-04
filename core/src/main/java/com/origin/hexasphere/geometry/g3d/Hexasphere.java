@@ -17,6 +17,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.ObjectFloatMap;
 import com.origin.hexasphere.game.IcoSphereTile;
+import it.unimi.dsi.fastutil.floats.*;
 
 //Read THIS: https://web.archive.org/web/20180808214504/http://donhavey.com:80/blog/tutorials/tutorial-3-the-icosahedron-sphere/
 
@@ -30,13 +31,14 @@ public class Hexasphere
     private float radius = 3f;
     private int subdivisions;
 
-    ArrayMap<Float, ArrayMap<Float, IcoSphereTile>> latLon;
+    //ArrayMap<Float, ArrayMap<Float, IcoSphereTile>> latLon;
+    Float2ObjectArrayMap<Float2ObjectArrayMap<IcoSphereTile>> latLon;
 
     public Hexasphere(int subdivisions)
     {
         points = new Array<Point>(true, 12);
         faces = new Array<Triangle>(true, 20);
-        this.latLon = new ArrayMap<Float, ArrayMap<Float, IcoSphereTile>>();
+        this.latLon = new Float2ObjectArrayMap<Float2ObjectArrayMap<IcoSphereTile>>(); //new ArrayMap<Float, ArrayMap<Float, IcoSphereTile>>();
         this.center = new Vector3(0f, 0f, 0f);
         this.subdivisions = subdivisions;
 
@@ -129,9 +131,7 @@ public class Hexasphere
         }
     }
 
-    // This iterates through the list of points and creates a tile at their location. By default, their location in the
-    // array will be latLonResolution * radius.
-    // latLonResolution =
+    // Not implemented yet...
     public void tileIcosphere()
     {
         for(int i = 0; i < points.size; i++)
