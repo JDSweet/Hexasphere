@@ -14,9 +14,7 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ArrayMap;
-import com.badlogic.gdx.utils.ObjectFloatMap;
-import com.origin.hexasphere.game.IcoSphereTile;
+import com.origin.hexasphere.tilemap.IcoSphereTile;
 import it.unimi.dsi.fastutil.floats.*;
 
 //Read THIS: https://web.archive.org/web/20180808214504/http://donhavey.com:80/blog/tutorials/tutorial-3-the-icosahedron-sphere/
@@ -137,10 +135,12 @@ public class Hexasphere
         for(int i = 0; i < points.size; i++)
         {
             Point p = points.get(i);
+            IcoSphereTile tile = new IcoSphereTile(this, p, IcoSphereTile.TileType.GRASS);
             float polarAngle = (float)Math.acos(p.getPosition().z / getRadius());
             float azimuthAngle = (float)Math.atan2(p.getPosition().y, p.getPosition().x);
             float lat = 90f - polarAngle;
             float lon = azimuthAngle;
+
             //IcoSphereTile(this, points.get(i), IcoSphereTile.TileType.GRASS);
         }
     }

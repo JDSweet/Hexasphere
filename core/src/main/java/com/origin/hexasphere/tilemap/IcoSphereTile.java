@@ -1,4 +1,4 @@
-package com.origin.hexasphere.game;
+package com.origin.hexasphere.tilemap;
 
 import com.badlogic.gdx.graphics.Color;
 import com.origin.hexasphere.geometry.g3d.Hexasphere;
