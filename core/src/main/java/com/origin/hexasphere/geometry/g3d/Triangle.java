@@ -28,6 +28,7 @@ public class Triangle
         Point p2 = hexasphere.getPointAt(index2);
         Point p3 = hexasphere.getPointAt(index3);
         Point[] oldPoints = new Point[] {p1, p2, p3};
+
         projectToSphere(p1.getPosition(), hexasphere.getCenter());
         projectToSphere(p2.getPosition(), hexasphere.getCenter());
         projectToSphere(p3.getPosition(), hexasphere.getCenter());
