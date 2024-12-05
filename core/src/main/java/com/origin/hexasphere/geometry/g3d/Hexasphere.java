@@ -14,6 +14,7 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ArrayMap;
 import com.origin.hexasphere.tilemap.IcoSphereTile;
 import it.unimi.dsi.fastutil.floats.*;
 
@@ -30,13 +31,15 @@ public class Hexasphere
     private int subdivisions;
 
     //ArrayMap<Float, ArrayMap<Float, IcoSphereTile>> latLon;
-    Float2ObjectArrayMap<Float2ObjectArrayMap<IcoSphereTile>> latLon;
+    //Float2ObjectArrayMap<Float2ObjectArrayMap<IcoSphereTile>> latLon;
+    ArrayMap<Vector2, IcoSphereTile> latLon;
 
     public Hexasphere(int subdivisions)
     {
         points = new Array<Point>(true, 12);
         faces = new Array<Triangle>(true, 20);
-        this.latLon = new Float2ObjectArrayMap<Float2ObjectArrayMap<IcoSphereTile>>(); //new ArrayMap<Float, ArrayMap<Float, IcoSphereTile>>();
+        //this.latLon = new Float2ObjectArrayMap<Float2ObjectArrayMap<IcoSphereTile>>(); //new ArrayMap<Float, ArrayMap<Float, IcoSphereTile>>();
+        this.latLon = new ArrayMap<Vector2, IcoSphereTile>();
         this.center = new Vector3(0f, 0f, 0f);
         this.subdivisions = subdivisions;
 
@@ -140,7 +143,8 @@ public class Hexasphere
             float azimuthAngle = (float)Math.atan2(p.getPosition().y, p.getPosition().x);
             float lat = 90f - polarAngle;
             float lon = azimuthAngle;
-
+            tile.setLatLon(lat, lon);
+            latLon.put(tile.getLatLon(), tile);
             //IcoSphereTile(this, points.get(i), IcoSphereTile.TileType.GRASS);
         }
     }
@@ -275,5 +279,15 @@ public class Hexasphere
         facesDebug += "Face Count: " + this.faces.size;
         Gdx.app.log("Vertices", vertsDebug);
         Gdx.app.log("Faces", facesDebug);
+    }
+
+    public void debugTiles()
+    {
+        String tileDebug = "\n";
+        for(IcoSphereTile tile : latLon.values())
+        {
+            tileDebug += "\nTile: " + tile.getPoint().getPosition();
+        }
+        Gdx.app.log("Tiles", tileDebug);
     }
 }

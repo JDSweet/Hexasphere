@@ -41,6 +41,7 @@ public class GameScreen implements Screen
 
         hexasphere = new Hexasphere(5);
         hexasphere.debugMesh(true, true);
+        hexasphere.debugTiles();
         modelInstance = hexasphere.instance();
     }
 
