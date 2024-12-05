@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.origin.hexasphere.geometry.g3d.Hexasphere;
 import com.origin.hexasphere.geometry.g3d.Point;
-import com.origin.hexasphere.util.ColorHolder;
+import com.origin.hexasphere.util.IColorHolder;
 
 public class IcoSphereTile
 {
@@ -42,8 +42,13 @@ public class IcoSphereTile
         return type.getColor();
     }
 
+    public void setTileType(TileType type)
+    {
+        this.type = type;
+        world.registerTileForUpdate(this);
+    }
 
-    public enum TileType implements ColorHolder
+    public enum TileType implements IColorHolder
     {
         GRASS
         {

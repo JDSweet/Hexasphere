@@ -1,22 +1,21 @@
 package com.origin.hexasphere.geometry.g3d;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Mesh;
-import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
+import com.badlogic.gdx.utils.Queue;
 import com.origin.hexasphere.tilemap.IcoSphereTile;
-import it.unimi.dsi.fastutil.floats.*;
 
 //Read THIS: https://web.archive.org/web/20180808214504/http://donhavey.com:80/blog/tutorials/tutorial-3-the-icosahedron-sphere/
 
@@ -26,20 +25,25 @@ public class Hexasphere
     private Vector3 center;
     private Array<Point> points;
     private Array<Triangle> faces;
+    private Mesh mesh;
     private Model model;
     private float radius = 3f;
     private int subdivisions;
+    private Queue<IcoSphereTile> tilesToUpdate;
+    private float[] vertices;
 
-    //ArrayMap<Float, ArrayMap<Float, IcoSphereTile>> latLon;
-    //Float2ObjectArrayMap<Float2ObjectArrayMap<IcoSphereTile>> latLon;
-    ArrayMap<Vector2, IcoSphereTile> latLon;
+    //Organized by latitude and longitude
+    //ArrayMap<Float, ArrayMap<Float, IcoSphereTile>> tiles;
+    //Float2ObjectArrayMap<Float2ObjectArrayMap<IcoSphereTile>> tiles;
+    ArrayMap<Vector2, IcoSphereTile> tiles;
 
     public Hexasphere(int subdivisions)
     {
         points = new Array<Point>(true, 12);
         faces = new Array<Triangle>(true, 20);
-        //this.latLon = new Float2ObjectArrayMap<Float2ObjectArrayMap<IcoSphereTile>>(); //new ArrayMap<Float, ArrayMap<Float, IcoSphereTile>>();
-        this.latLon = new ArrayMap<Vector2, IcoSphereTile>();
+        this.tilesToUpdate = new Queue<>();
+        //this.tiles = new Float2ObjectArrayMap<Float2ObjectArrayMap<IcoSphereTile>>(); //new ArrayMap<Float, ArrayMap<Float, IcoSphereTile>>();
+        this.tiles = new ArrayMap<Vector2, IcoSphereTile>();
         this.center = new Vector3(0f, 0f, 0f);
         this.subdivisions = subdivisions;
 
@@ -50,6 +54,8 @@ public class Hexasphere
         tileIcosphere();
 
         buildMesh();
+
+        cacheVertexData();
     }
 
     //Based on the following articles:
@@ -132,7 +138,7 @@ public class Hexasphere
         }
     }
 
-    // Not implemented yet...
+    //https://stackoverflow.com/questions/10473852/convert-latitude-and-longitude-to-point-in-3d-space
     public void tileIcosphere()
     {
         for(int i = 0; i < points.size; i++)
@@ -141,10 +147,10 @@ public class Hexasphere
             IcoSphereTile tile = new IcoSphereTile(this, p, IcoSphereTile.TileType.GRASS);
             float polarAngle = (float)Math.acos(p.getPosition().z / getRadius());
             float azimuthAngle = (float)Math.atan2(p.getPosition().y, p.getPosition().x);
-            float lat = 90f - polarAngle;
-            float lon = azimuthAngle;
+            float lat = 90f - polarAngle * 180f / MathUtils.PI;
+            float lon = azimuthAngle * 180f / MathUtils.PI;
             tile.setLatLon(lat, lon);
-            latLon.put(tile.getLatLon(), tile);
+            tiles.put(tile.getLatLon(), tile);
             //IcoSphereTile(this, points.get(i), IcoSphereTile.TileType.GRASS);
         }
     }
@@ -170,6 +176,50 @@ public class Hexasphere
         }
     }
 
+    //x, y, z, n, o, r, r, g, b, a
+    public void buildMesh()
+    {
+        ModelBuilder modelBuilder = new ModelBuilder();
+        MeshBuilder b = new MeshBuilder();
+
+        b.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.ColorUnpacked(), VertexAttribute.TexCoords(0)));
+        //b.begin(VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal |VertexAttributes.Usage.ColorUnpacked | VertexAttributes.Usage.TextureCoordinates);
+        for(int i = 0; i < points.size; i++)
+        {
+            Point point = points.get(i);
+
+            b.vertex(
+                point.getPosition(),
+                point.getPosition(),
+                point.getColor(),
+                new Vector2(1, 1));
+        }
+        for(int i = 0; i < faces.size; i++)
+        {
+            b.index(faces.get(i).getIdx1());
+            b.index(faces.get(i).getIdx2());
+            b.index(faces.get(i).getIdx3());
+        }
+        this.mesh = b.end();
+        modelBuilder.begin();
+        modelBuilder.part("world", mesh,  GL20.GL_TRIANGLES, new Material(ColorAttribute.createDiffuse(Color.WHITE)));
+        this.model = modelBuilder.end();
+    }
+
+    private void cacheVertexData()
+    {
+        //Divide to convert bytes to floats. The vertex size is in bytes.
+        this.vertices = new float[mesh.getNumVertices() * mesh.getVertexSize() / 4];
+        this.vertices = mesh.getVertices(vertices);
+        Gdx.app.log("Vertex Storage Debug", "Vertex Size " + vertices.length);
+    }
+
+    //Thank the Gods for this brave soul: https://gamedev.stackexchange.com/a/212473/60136
+    public ModelInstance instance()
+    {
+        return new ModelInstance(model);
+    }
+
     public void addRawTriangle(Point p1, Point p2, Point p3)
     {
         short p1Idx, p2Idx, p3Idx;
@@ -188,45 +238,6 @@ public class Hexasphere
     public void removeTriangle(Triangle tri)
     {
         this.faces.removeValue(tri, true);
-    }
-
-    public void buildMesh()
-    {
-        ModelBuilder modelBuilder = new ModelBuilder();
-        MeshBuilder b = new MeshBuilder();
-
-        b.begin(VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal |VertexAttributes.Usage.ColorUnpacked);
-        for(int i = 0; i < points.size; i++)
-        {
-            Point point = points.get(i);
-
-            b.vertex(
-                point.getPosition(),
-                point.getPosition(),
-                point.getColor(),
-                new Vector2(1, 1));
-        }
-        for(int i = 0; i < faces.size; i++)
-        {
-            b.index(faces.get(i).getIdx1());
-            b.index(faces.get(i).getIdx2());
-            b.index(faces.get(i).getIdx3());
-        }
-        Mesh mesh = b.end();
-        modelBuilder.begin();
-        modelBuilder.part("world", mesh,  GL20.GL_TRIANGLES, new Material(ColorAttribute.createDiffuse(Color.WHITE)));
-        this.model = modelBuilder.end();
-    }
-
-    //Thank the Gods for this brave soul: https://gamedev.stackexchange.com/a/212473/60136
-    public ModelInstance instance()
-    {
-        return new ModelInstance(model);
-    }
-
-    public Point getPointAt(int index)
-    {
-        return points.get(index);
     }
 
     // Adds the point and returns its index if it does not exist.
@@ -252,6 +263,48 @@ public class Hexasphere
         }
 
         return retval;
+    }
+
+    public void oceanify()
+    {
+        for(IcoSphereTile t : tiles.values())
+        {
+            t.setTileType(IcoSphereTile.TileType.OCEAN);
+        }
+    }
+
+    //This method updates the color of the vertex associated with any tile that has changed since the last update.
+    public void updateGeometry()
+    {
+        while(this.tilesToUpdate.notEmpty())
+        {
+            int positionOffset = mesh.getVertexAttributes().getOffset(VertexAttributes.Usage.Position);
+            int colorOffset = mesh.getVertexAttributes().getOffset(VertexAttributes.Usage.ColorUnpacked);
+            int uvOffset = mesh.getVertexAttributes().getOffset(VertexAttributes.Usage.TextureCoordinates);
+            int norOffset = mesh.getVertexAttributes().getOffset(VertexAttributes.Usage.Normal);
+            //int vertexSize = mesh.getVertexSize() / 4;
+
+            IcoSphereTile tile = tilesToUpdate.removeFirst();
+            int idx = tile.getPoint().getIndex();
+            int rIdx = (idx * mesh.getVertexSize()/4);
+            rIdx += positionOffset + colorOffset;
+            vertices[rIdx] = tile.getColor().r;
+            vertices[rIdx + 1] = tile.getColor().g;
+            vertices[rIdx + 2] = tile.getColor().b;
+            vertices[rIdx + 3] = tile.getColor().a;
+        }
+        mesh.setVertices(vertices);
+    }
+
+    //Registers the specified tile to be updated next time the geometry for the world is updated.
+    public void registerTileForUpdate(IcoSphereTile tile)
+    {
+        this.tilesToUpdate.addLast(tile);
+    }
+
+    public Point getPointAt(int index)
+    {
+        return points.get(index);
     }
 
     public float getRadius()
@@ -284,9 +337,9 @@ public class Hexasphere
     public void debugTiles()
     {
         String tileDebug = "\n";
-        for(IcoSphereTile tile : latLon.values())
+        for(IcoSphereTile tile : tiles.values())
         {
-            tileDebug += "\nTile: " + tile.getPoint().getPosition();
+            tileDebug += "\nTile: " + tile.getLatLon();
         }
         Gdx.app.log("Tiles", tileDebug);
     }
