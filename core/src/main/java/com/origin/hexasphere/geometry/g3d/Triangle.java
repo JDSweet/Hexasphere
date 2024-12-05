@@ -38,6 +38,10 @@ public class Triangle
         Point p5 = getMidPoint(hexasphere.getPointAt(index1), hexasphere.getPointAt(index3));
         Point p6 = getMidPoint(hexasphere.getPointAt(index2), hexasphere.getPointAt(index3));
 
+        p4.setColor(p1.getColor());
+        p5.setColor(p2.getColor());
+        p6.setColor(p3.getColor());
+
         //p4.setColor(RandomColorRetriever.randomColor());
         //p5.setColor(RandomColorRetriever.randomColor());
         //p6.setColor(RandomColorRetriever.randomColor());
@@ -71,18 +75,25 @@ public class Triangle
     private void projectToSphere(Vector3 objVector, Vector3 centerVector)
     {
         //Magnitude = sqrt((x₁ - x₀)² + (y₁ - y₀)² + (z₁ - z₀)²)
-        float xDistance = (float)(Math.pow((objVector.x-centerVector.x), 2d));
+        /*float xDistance = (float)(Math.pow((objVector.x-centerVector.x), 2d));
         float yDistance = (float)(Math.pow((objVector.y-centerVector.y), 2d));
         float zDistance = (float)(Math.pow((objVector.z-centerVector.z), 2d));
         float distance = (float)Math.sqrt((xDistance + yDistance + zDistance));
+        float scaleFactor = hexasphere.getRadius() / distance;
+        objVector.set(objVector.x * scaleFactor, objVector.y * scaleFactor, objVector.z * scaleFactor);*/
+
+        float xDistance = (float)(Math.pow((double)(objVector.x-centerVector.x), 2d));
+        float yDistance = (float)(Math.pow((double)(objVector.y-centerVector.y), 2d));
+        float zDistance = (float)(Math.pow((double)(objVector.z-centerVector.z), 2d));
+        float magnitude = (float)Math.sqrt((xDistance + yDistance + zDistance)) / 1.95f;
+        objVector.x /= magnitude * hexasphere.getRadius();
+        objVector.y /= magnitude * hexasphere.getRadius();
+        objVector.z /= magnitude * hexasphere.getRadius();
         //float magnitude = (float)Math.sqrt((xDistance + yDistance + zDistance));
         //objVector.x /= magnitude; //* hexasphere.getRadius();
         //objVector.y /= magnitude; //* hexasphere.getRadius();
         //objVector.z /= magnitude; //* hexasphere.getRadius();
         //objVector.set(objVector.dst(centerVector));
-
-        float scaleFactor = hexasphere.getRadius() / distance;
-        objVector.set(objVector.x * scaleFactor, objVector.y * scaleFactor, objVector.z * scaleFactor);
     }
 
     public Point getPoint1()

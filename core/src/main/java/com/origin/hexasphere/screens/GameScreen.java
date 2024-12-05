@@ -42,6 +42,7 @@ public class GameScreen implements Screen
         hexasphere = new Hexasphere(5);
         hexasphere.debugMesh(false, false);
         //hexasphere.debugTiles();
+        hexasphere.tileIcosphere();
         hexasphere.oceanify();
         hexasphere.updateGeometry();
         modelInstance = hexasphere.instance();
@@ -55,8 +56,8 @@ public class GameScreen implements Screen
 
     private Vector3 newDir = new Vector3();
     private float camZoomAmnt = 0.2f;
-    private float minCamZoom = 4f;
-    private float maxCamZoom = 12f;
+    private float minCamZoom = 1f;
+    private float maxCamZoom = 26f;
 
     @Override
     public void render(float delta)

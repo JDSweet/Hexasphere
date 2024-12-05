@@ -35,15 +35,16 @@ public class Hexasphere
     //Organized by latitude and longitude
     //ArrayMap<Float, ArrayMap<Float, IcoSphereTile>> tiles;
     //Float2ObjectArrayMap<Float2ObjectArrayMap<IcoSphereTile>> tiles;
-    ArrayMap<Vector2, IcoSphereTile> tiles;
+    //ArrayMap<Vector2, IcoSphereTile> tiles;
+    Array<IcoSphereTile> tiles;
 
     public Hexasphere(int subdivisions)
     {
         points = new Array<Point>(true, 12);
         faces = new Array<Triangle>(true, 20);
         this.tilesToUpdate = new Queue<>();
-        //this.tiles = new Float2ObjectArrayMap<Float2ObjectArrayMap<IcoSphereTile>>(); //new ArrayMap<Float, ArrayMap<Float, IcoSphereTile>>();
-        this.tiles = new ArrayMap<Vector2, IcoSphereTile>();
+        //this.tiles = new ArrayMap<>(); //new ArrayMap<Float, ArrayMap<Float, IcoSphereTile>>();
+        this.tiles = new Array<IcoSphereTile>(); //new ArrayMap<Vector2, IcoSphereTile>();
         this.center = new Vector3(0f, 0f, 0f);
         this.subdivisions = subdivisions;
 
@@ -51,7 +52,7 @@ public class Hexasphere
 
         subdivide(this.subdivisions);
 
-        tileIcosphere();
+        //tileIcosphere();
 
         buildMesh();
 
@@ -150,7 +151,8 @@ public class Hexasphere
             float lat = 90f - polarAngle * 180f / MathUtils.PI;
             float lon = azimuthAngle * 180f / MathUtils.PI;
             tile.setLatLon(lat, lon);
-            tiles.put(tile.getLatLon(), tile);
+            tiles.add(tile);
+            //tiles.put(tile.getLatLon(), tile);
             //IcoSphereTile(this, points.get(i), IcoSphereTile.TileType.GRASS);
         }
     }
@@ -267,9 +269,20 @@ public class Hexasphere
 
     public void oceanify()
     {
-        for(IcoSphereTile t : tiles.values())
+        for(IcoSphereTile t : tiles)
         {
             t.setTileType(IcoSphereTile.TileType.OCEAN);
+        }
+
+        /*for(IcoSphereTile t : tiles.values())
+            t.setTileType(IcoSphereTile.TileType.OCEAN);*/
+    }
+
+    public void grassify()
+    {
+        for(IcoSphereTile t : tiles)
+        {
+            t.setTileType(IcoSphereTile.TileType.GRASS);
         }
     }
 
@@ -337,10 +350,12 @@ public class Hexasphere
     public void debugTiles()
     {
         String tileDebug = "\n";
-        for(IcoSphereTile tile : tiles.values())
+        for(IcoSphereTile tile : tiles)
         {
             tileDebug += "\nTile: " + tile.getLatLon();
         }
+        /*for(IcoSphereTile tile : tiles.values())
+            tileDebug += "\nTile: " + tile.getLatLon();*/
         Gdx.app.log("Tiles", tileDebug);
     }
 }

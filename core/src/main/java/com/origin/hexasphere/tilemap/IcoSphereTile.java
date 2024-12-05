@@ -2,6 +2,7 @@ package com.origin.hexasphere.tilemap;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
+import com.origin.hexasphere.coordinates.LatLon;
 import com.origin.hexasphere.geometry.g3d.Hexasphere;
 import com.origin.hexasphere.geometry.g3d.Point;
 import com.origin.hexasphere.util.IColorHolder;
@@ -11,7 +12,7 @@ public class IcoSphereTile
     private Hexasphere world;
     private int geometryIndex;
     private TileType type;
-    private Vector2 latLon;
+    private LatLon latLon;
 
     public IcoSphereTile(Hexasphere world, Point point, TileType tileType)
     {
@@ -19,7 +20,7 @@ public class IcoSphereTile
         this.geometryIndex = point.getIndex();
         this.type = tileType;
         point.setColor(type.getColor());
-        this.latLon = new Vector2();
+        this.latLon = new LatLon();
     }
 
     public void setLatLon(float lat, float lon)
@@ -27,7 +28,7 @@ public class IcoSphereTile
         this.latLon.set(lat, lon);
     }
 
-    public Vector2 getLatLon()
+    public LatLon getLatLon()
     {
         return this.latLon;
     }
