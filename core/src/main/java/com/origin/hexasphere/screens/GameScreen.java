@@ -2,6 +2,7 @@ package com.origin.hexasphere.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
@@ -10,12 +11,15 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.Octree;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Logger;
 import com.origin.hexasphere.geometry.g3d.Hexasphere;
+import com.origin.hexasphere.geometry.g3d.SphereRayCaster;
+import com.origin.hexasphere.tilemap.IcoSphereTile;
 
 /** First screen of the application. Displayed after the application is created. */
-public class GameScreen implements Screen
+public class GameScreen implements Screen, InputProcessor
 {
     private Mesh mesh;
     private Model model;
@@ -26,6 +30,8 @@ public class GameScreen implements Screen
     private Hexasphere hexasphere;
     //private Vector3 facing;
 
+    //For whatever reason, the setting the tile color doesn't work when we don't subdivide the hexagon.
+    //This means, that some logic is dependent on subdivision.
     @Override
     public void show()
     {
@@ -39,13 +45,17 @@ public class GameScreen implements Screen
         cam.update();
         batch = new ModelBatch();
 
-        hexasphere = new Hexasphere(5);
+        hexasphere = new Hexasphere(3f, 1);
         hexasphere.debugMesh(false, false);
         //hexasphere.debugTiles();
         hexasphere.tileIcosphere();
         hexasphere.oceanify();
-        hexasphere.updateGeometry();
+        hexasphere.debugTiles();
+        //hexasphere.oceanify();
+        //hexasphere.updateGeometry();
         modelInstance = hexasphere.instance();
+
+        Gdx.input.setInputProcessor(this);
     }
 
     Vector3 hexPos = new Vector3(0f, 0f, 0f);
@@ -57,13 +67,15 @@ public class GameScreen implements Screen
     private Vector3 newDir = new Vector3();
     private float camZoomAmnt = 0.2f;
     private float minCamZoom = 1f;
-    private float maxCamZoom = 26f;
+    private float maxCamZoom = 52f;
 
     @Override
     public void render(float delta)
     {
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+
+        hexasphere.update();
 
         //cam.rotateAround(hexPos, camRotationSpeed, 1f);
         if(Gdx.input.isKeyPressed(Input.Keys.W))
@@ -80,6 +92,8 @@ public class GameScreen implements Screen
         if(Gdx.input.isKeyPressed(Input.Keys.BACKSPACE))
             if(hexasphere.getCenter().dst(cam.position) < maxCamZoom)
                 cam.position.add(newDir.set(cam.direction).scl(-camZoomAmnt));
+        if(Gdx.input.isKeyPressed(Input.Keys.SPACE))
+            hexasphere.oceanify();
         cam.lookAt(0f, 0f, 0f);
             //cam.position.set(cam.position.x+cam.direction.x, cam.position.y+cam.direction.y, cam.position.z-+cam.direction.z);
 
@@ -95,7 +109,6 @@ public class GameScreen implements Screen
         batch.begin(cam);
         batch.render(modelInstance);
         batch.end();
-
     }
 
     @Override
@@ -121,5 +134,61 @@ public class GameScreen implements Screen
     @Override
     public void dispose() {
         // Destroy screen's assets here.
+    }
+
+    @Override
+    public boolean keyDown(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    SphereRayCaster sr = new SphereRayCaster();
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button)
+    {
+        /*Vector3 touchPos = new Vector3(screenX, screenY, cam.position.z);
+        touchPos = cam.unproject(touchPos);
+        IcoSphereTile touched = hexasphere.getClosestTile(touchPos);
+        touched.setTileType(IcoSphereTile.TileType.GRASS);*/
+        //Vector3 touchPos = sr.rayCastToSphere(cam.position, hexasphere.getCenter(), 0.1f, 10, hexasphere.getRadius());
+        //IcoSphereTile touched = hexasphere.getClosestTile(hexasphere.projectToSphere(touchPos));
+        //touched.setTileType(IcoSphereTile.TileType.GRASS);
+        //Gdx.app.log("TileTouchDebug", "Tile ID: " + touchPos);
+        hexasphere.everyOther();
+        return true;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(float amountX, float amountY) {
+        return false;
     }
 }

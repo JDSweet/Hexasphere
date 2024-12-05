@@ -49,6 +49,11 @@ public class IcoSphereTile
         world.registerTileForUpdate(this);
     }
 
+    public Hexasphere getWorld()
+    {
+        return world;
+    }
+
     public enum TileType implements IColorHolder
     {
         GRASS

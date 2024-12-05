@@ -3,6 +3,8 @@ package com.origin.hexasphere.geometry.g3d;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector3;
 
+import java.util.Objects;
+
 
 public class Point
 {
@@ -55,6 +57,12 @@ public class Point
     public boolean equals(Object other)
     {
         Point otherPnt = (Point)other;
-        return this.position.epsilonEquals(otherPnt.getPosition(), 0.00000f);
+        return this.position.epsilonEquals(otherPnt.getPosition(), 0.0000001f);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(position);
     }
 }

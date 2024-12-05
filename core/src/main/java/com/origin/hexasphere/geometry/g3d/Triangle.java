@@ -1,5 +1,6 @@
 package com.origin.hexasphere.geometry.g3d;
 
+import com.badlogic.gdx.math.Octree;
 import com.badlogic.gdx.math.Vector3;
 import com.origin.hexasphere.util.RandomColorRetriever;
 

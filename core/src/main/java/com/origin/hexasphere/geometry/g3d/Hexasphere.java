@@ -10,10 +10,12 @@ import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Octree;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
+import com.badlogic.gdx.utils.BinaryHeap;
 import com.badlogic.gdx.utils.Queue;
 import com.origin.hexasphere.tilemap.IcoSphereTile;
 
@@ -30,6 +32,7 @@ public class Hexasphere
     private float radius = 3f;
     private int subdivisions;
     private Queue<IcoSphereTile> tilesToUpdate;
+    //private Octree<IcoSphereTile> tilesOctree;
     private float[] vertices;
 
     //Organized by latitude and longitude
@@ -38,7 +41,7 @@ public class Hexasphere
     //ArrayMap<Vector2, IcoSphereTile> tiles;
     Array<IcoSphereTile> tiles;
 
-    public Hexasphere(int subdivisions)
+    public Hexasphere(float radius, int subdivisions)
     {
         points = new Array<Point>(true, 12);
         faces = new Array<Triangle>(true, 20);
@@ -47,6 +50,8 @@ public class Hexasphere
         this.tiles = new Array<IcoSphereTile>(); //new ArrayMap<Vector2, IcoSphereTile>();
         this.center = new Vector3(0f, 0f, 0f);
         this.subdivisions = subdivisions;
+        this.radius = radius;
+        //this.tilesOctree = new Octree<>(new Vector3(-radius, -radius, -radius), new Vector3(radius, radius, radius), radius, 4000);
 
         createIcosahedron();
 
@@ -57,6 +62,16 @@ public class Hexasphere
         buildMesh();
 
         cacheVertexData();
+    }
+
+    private void handleOriginalIcosahedron(Point[] pnts, Triangle[] tris)
+    {
+        for(Triangle tri : tris)
+        {
+            pnts[tri.getIdx1()].setIndex(tri.getIdx1());
+            pnts[tri.getIdx2()].setIndex(tri.getIdx2());
+            pnts[tri.getIdx3()].setIndex(tri.getIdx3());
+        }
     }
 
     //Based on the following articles:
@@ -137,6 +152,8 @@ public class Hexasphere
         {
             faces.add(f);
         }
+
+        handleOriginalIcosahedron(pnts, fces);
     }
 
     //https://stackoverflow.com/questions/10473852/convert-latitude-and-longitude-to-point-in-3d-space
@@ -204,7 +221,7 @@ public class Hexasphere
         }
         this.mesh = b.end();
         modelBuilder.begin();
-        modelBuilder.part("world", mesh,  GL20.GL_TRIANGLES, new Material(ColorAttribute.createDiffuse(Color.WHITE)));
+        modelBuilder.part("world", mesh,  GL20.GL_TRIANGLES, new Material(/*ColorAttribute.createDiffuse(Color.WHITE)*/));
         this.model = modelBuilder.end();
     }
 
@@ -263,6 +280,8 @@ public class Hexasphere
             retval = points.size - 1;
             //Gdx.app.debug("Hexasphere", "Point " + point.getPosition() + " does not exist! Returning " + retval);
         }
+        //points.add(point);
+        //return points.size - 1;
 
         return retval;
     }
@@ -284,6 +303,46 @@ public class Hexasphere
         {
             t.setTileType(IcoSphereTile.TileType.GRASS);
         }
+    }
+
+    public IcoSphereTile getClosestTile(Vector3 to)
+    {
+        return getClosestTile(to.x, to.y, to.z);
+    }
+
+    public IcoSphereTile getClosestTile(float x, float y, float z)
+    {
+        IcoSphereTile closestTile = null;
+        float curDistance = 0f;
+        float lastDistance = 0f;
+        for(int i = 0; i < tiles.size; i++)
+        {
+            IcoSphereTile tile = tiles.get(i);
+            if(closestTile == null)
+            {
+                closestTile = tile;
+                curDistance = tile.getPoint().getPosition().dst(x, y, z);
+                lastDistance = curDistance;
+                continue;
+            }
+            curDistance = tile.getPoint().getPosition().dst(x, y, z);
+            if(curDistance < lastDistance)
+                closestTile = tile;
+        }
+        return closestTile;
+    }
+
+    public void update()
+    {
+        if(isDirty())
+        {
+            updateGeometry();
+        }
+    }
+
+    private boolean isDirty()
+    {
+        return this.tilesToUpdate.notEmpty();
     }
 
     //This method updates the color of the vertex associated with any tile that has changed since the last update.
@@ -352,10 +411,45 @@ public class Hexasphere
         String tileDebug = "\n";
         for(IcoSphereTile tile : tiles)
         {
-            tileDebug += "\nTile: " + tile.getLatLon();
+            //tileDebug += "\nTile: " + tile.getLatLon();
         }
         /*for(IcoSphereTile tile : tiles.values())
             tileDebug += "\nTile: " + tile.getLatLon();*/
-        Gdx.app.log("Tiles", tileDebug);
+        Gdx.app.log("Tiles", tileDebug + tiles.size);
+    }
+
+    public Vector3 projectToSphere(Vector3 objVector)
+    {
+        //Magnitude = sqrt((x₁ - x₀)² + (y₁ - y₀)² + (z₁ - z₀)²)
+        float xDistance = (float)(Math.pow((objVector.x-center.x), 2d));
+        float yDistance = (float)(Math.pow((objVector.y-center.y), 2d));
+        float zDistance = (float)(Math.pow((objVector.z-center.z), 2d));
+        float distance = (float)Math.sqrt((xDistance + yDistance + zDistance));
+        float scaleFactor = getRadius() / distance;
+        objVector.set(objVector.x * scaleFactor, objVector.y * scaleFactor, objVector.z * scaleFactor);
+
+        /*float xDistance = (float)(Math.pow((double)(objVector.x-centerVector.x), 2d));
+        float yDistance = (float)(Math.pow((double)(objVector.y-centerVector.y), 2d));
+        float zDistance = (float)(Math.pow((double)(objVector.z-centerVector.z), 2d));
+        float magnitude = (float)Math.sqrt((xDistance + yDistance + zDistance)) / 1.95f;
+        objVector.x /= magnitude * hexasphere.getRadius();
+        objVector.y /= magnitude * hexasphere.getRadius();
+        objVector.z /= magnitude * hexasphere.getRadius();/*
+        //float magnitude = (float)Math.sqrt((xDistance + yDistance + zDistance));
+        //objVector.x /= magnitude; //* hexasphere.getRadius();
+        //objVector.y /= magnitude; //* hexasphere.getRadius();
+        //objVector.z /= magnitude; //* hexasphere.getRadius();
+        //objVector.set(objVector.dst(centerVector));*/
+
+        return objVector;
+    }
+
+    public void everyOther()
+    {
+        for(int i = 0; i < tiles.size; i++)
+        {
+            if(i % 2 == 0)
+                tiles.get(i).setTileType(IcoSphereTile.TileType.GRASS);
+        }
     }
 }
