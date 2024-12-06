@@ -9,7 +9,7 @@ public class LatLon extends Vector2
     {
         if(other instanceof Vector2)
         {
-            return epsilonEquals((Vector2)other, 0.0000001f);
+            return epsilonEquals((Vector2)other, 0.01f);
         }
         else
             return super.equals(other);

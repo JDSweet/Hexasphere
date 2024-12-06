@@ -51,7 +51,7 @@ public class Triangle
         projectToSphere(p5.getPosition(), hexasphere.getCenter());
         projectToSphere(p6.getPosition(), hexasphere.getCenter());
 
-        Point[] newPoints = new Point[] {p4, p5, p6};
+        //Point[] newPoints = new Point[] {p4, p5, p6};
         //for(int i = 0; i < newPoints.length; i++)
             //newPoints[i].setColor(oldPoints[i].getColor().cpy());
 
@@ -60,7 +60,7 @@ public class Triangle
         hexasphere.addRawTriangle(p4, p6, p5);
         hexasphere.addRawTriangle(p6, p4, p2);
 
-        hexasphere.removeTriangle(this);
+        //hexasphere.removeTriangle(this);
     }
 
     private Point getMidPoint(Point p1, Point p2)
@@ -70,7 +70,7 @@ public class Triangle
 
         float x1 = p1Pos.x, y1 = p1Pos.y, z1 = p1Pos.z;
         float x2 = p2Pos.x, y2 = p2Pos.y, z2 = p2Pos.z;
-        return new Point((x1 + x2)/2f, (y1 + y2)/2f, (z1 + z2) / 2f);
+        return new Point((x1 + x2)/2f, (y1 + y2)/2f, (z1 + z2) / 2f, false);
     }
 
     private void projectToSphere(Vector3 objVector, Vector3 centerVector)

@@ -13,6 +13,9 @@ public class IcoSphereTile
     private int geometryIndex;
     private TileType type;
     private LatLon latLon;
+    private int id;
+
+    private static int maxTileID = 0;
 
     public IcoSphereTile(Hexasphere world, Point point, TileType tileType)
     {
@@ -21,6 +24,7 @@ public class IcoSphereTile
         this.type = tileType;
         point.setColor(type.getColor());
         this.latLon = new LatLon();
+        this.id = maxTileID++;
     }
 
     public void setLatLon(float lat, float lon)
@@ -52,6 +56,11 @@ public class IcoSphereTile
     public Hexasphere getWorld()
     {
         return world;
+    }
+
+    public int getID()
+    {
+        return this.id;
     }
 
     public enum TileType implements IColorHolder

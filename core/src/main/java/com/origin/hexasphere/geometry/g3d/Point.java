@@ -11,21 +11,23 @@ public class Point
     private Vector3 position;
     private Color color;
     private int index;
+    private boolean isOriginal;
 
-    public Point(float x, float y, float z)
+    public Point(float x, float y, float z, boolean isOriginal)
     {
-        this(x, y, z, Color.RED);
+        this(x, y, z, Color.RED, isOriginal);
     }
 
-    public Point(float x, float y, float z, Color color)
+    public Point(float x, float y, float z, Color color, boolean isOriginal)
     {
-        this(new Vector3(x, y, z), color);
+        this(new Vector3(x, y, z), color, isOriginal);
     }
 
-    public Point(Vector3 position, Color color)
+    public Point(Vector3 position, Color color, boolean isOriginal)
     {
         this.position = position;
         this.color = color;
+        this.isOriginal = isOriginal;
     }
 
     public void setIndex(int idx)
@@ -53,11 +55,16 @@ public class Point
         this.color = c;
     }
 
+    public boolean isOriginal()
+    {
+        return this.isOriginal;
+    }
+
     @Override
     public boolean equals(Object other)
     {
         Point otherPnt = (Point)other;
-        return this.position.epsilonEquals(otherPnt.getPosition(), 0.0000001f);
+        return this.position.epsilonEquals(otherPnt.getPosition(), 0.01f);
     }
 
     @Override

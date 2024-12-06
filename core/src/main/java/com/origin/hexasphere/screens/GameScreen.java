@@ -45,7 +45,7 @@ public class GameScreen implements Screen, InputProcessor
         cam.update();
         batch = new ModelBatch();
 
-        hexasphere = new Hexasphere(3f, 1);
+        hexasphere = new Hexasphere(3f, 4);
         hexasphere.debugMesh(false, false);
         //hexasphere.debugTiles();
         hexasphere.tileIcosphere();
@@ -92,8 +92,11 @@ public class GameScreen implements Screen, InputProcessor
         if(Gdx.input.isKeyPressed(Input.Keys.BACKSPACE))
             if(hexasphere.getCenter().dst(cam.position) < maxCamZoom)
                 cam.position.add(newDir.set(cam.direction).scl(-camZoomAmnt));
-        if(Gdx.input.isKeyPressed(Input.Keys.SPACE))
+        if(Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
             hexasphere.oceanify();
+            hexasphere.desertifyOriginals();
+            //hexasphere.grassifyNonOriginals();
+        }
         cam.lookAt(0f, 0f, 0f);
             //cam.position.set(cam.position.x+cam.direction.x, cam.position.y+cam.direction.y, cam.position.z-+cam.direction.z);
 
@@ -155,15 +158,29 @@ public class GameScreen implements Screen, InputProcessor
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button)
     {
-        /*Vector3 touchPos = new Vector3(screenX, screenY, cam.position.z);
-        touchPos = cam.unproject(touchPos);
-        IcoSphereTile touched = hexasphere.getClosestTile(touchPos);
-        touched.setTileType(IcoSphereTile.TileType.GRASS);*/
-        //Vector3 touchPos = sr.rayCastToSphere(cam.position, hexasphere.getCenter(), 0.1f, 10, hexasphere.getRadius());
-        //IcoSphereTile touched = hexasphere.getClosestTile(hexasphere.projectToSphere(touchPos));
-        //touched.setTileType(IcoSphereTile.TileType.GRASS);
-        //Gdx.app.log("TileTouchDebug", "Tile ID: " + touchPos);
-        hexasphere.everyOther();
+        Gdx.app.log("CamPos Debug", cam.position.toString());
+
+        // This code kind of works, in that it projects a point to the sphere and gets the closest point, but it
+        // fumbles a bit when the camera is not directly facing a tile.
+        // It basically gets the user's touch position, and uses the camera to
+        // get the world coordinate of a tile, and uses that world coordinate to look up the tile.
+        Vector3 touchPos = new Vector3(screenX, screenY, 0f);
+        Gdx.app.log("TouchPos", touchPos.toString());
+
+        Vector3 projectedTouchPos = cam.unproject(touchPos);
+        projectedTouchPos.z = cam.position.z;
+        Gdx.app.log("Projected TouchPos", projectedTouchPos.toString());
+
+        Vector3 rayCastOutput = sr.rayCastToSphere(projectedTouchPos, hexasphere.getCenter(), cam.direction, hexasphere.getRadius());
+        Gdx.app.log("Raycast Output Debug", rayCastOutput.toString());
+        Gdx.app.log("Camera Direction Debug", cam.direction.toString());
+
+        // We could also possibly try the reverse of this operation:
+
+        IcoSphereTile touched = hexasphere.getClosestTile(hexasphere.projectToSphere(rayCastOutput));
+        touched.setTileType(IcoSphereTile.TileType.GRASS);
+        ;
+        //hexasphere.everyOther();
         return true;
     }
 

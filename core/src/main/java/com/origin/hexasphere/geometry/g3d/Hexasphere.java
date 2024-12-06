@@ -29,7 +29,7 @@ public class Hexasphere
     private Array<Triangle> faces;
     private Mesh mesh;
     private Model model;
-    private float radius = 3f;
+    private float radius;
     private int subdivisions;
     private Queue<IcoSphereTile> tilesToUpdate;
     //private Octree<IcoSphereTile> tilesOctree;
@@ -46,12 +46,10 @@ public class Hexasphere
         points = new Array<Point>(true, 12);
         faces = new Array<Triangle>(true, 20);
         this.tilesToUpdate = new Queue<>();
-        //this.tiles = new ArrayMap<>(); //new ArrayMap<Float, ArrayMap<Float, IcoSphereTile>>();
-        this.tiles = new Array<IcoSphereTile>(); //new ArrayMap<Vector2, IcoSphereTile>();
+        this.tiles = new Array<IcoSphereTile>();
         this.center = new Vector3(0f, 0f, 0f);
         this.subdivisions = subdivisions;
         this.radius = radius;
-        //this.tilesOctree = new Octree<>(new Vector3(-radius, -radius, -radius), new Vector3(radius, radius, radius), radius, 4000);
 
         createIcosahedron();
 
@@ -62,16 +60,6 @@ public class Hexasphere
         buildMesh();
 
         cacheVertexData();
-    }
-
-    private void handleOriginalIcosahedron(Point[] pnts, Triangle[] tris)
-    {
-        for(Triangle tri : tris)
-        {
-            pnts[tri.getIdx1()].setIndex(tri.getIdx1());
-            pnts[tri.getIdx2()].setIndex(tri.getIdx2());
-            pnts[tri.getIdx3()].setIndex(tri.getIdx3());
-        }
     }
 
     //Based on the following articles:
@@ -102,18 +90,18 @@ public class Hexasphere
 
         Point[] pnts = new Point[]
         {
-            new Point(radius, tao * radius, 0),
-            new Point(-radius, tao * radius, 0),
-            new Point(radius,-tao * radius,0),
-            new Point(-radius,-tao * radius,0),
-            new Point(0, radius,tao * radius),
-            new Point(0,-radius,tao * radius),
-            new Point(0, radius,-tao * radius),
-            new Point(0,-radius,-tao * radius),
-            new Point(tao * radius,0, radius),
-            new Point(-tao * radius,0, radius),
-            new Point(tao * radius,0,-radius),
-            new Point(-tao * radius,0,-radius)
+            new Point(radius, tao * radius, 0, true),
+            new Point(-radius, tao * radius, 0, true),
+            new Point(radius,-tao * radius,0, true),
+            new Point(-radius,-tao * radius,0, true),
+            new Point(0, radius,tao * radius, true),
+            new Point(0,-radius,tao * radius, true),
+            new Point(0, radius,-tao * radius, true),
+            new Point(0,-radius,-tao * radius, true),
+            new Point(tao * radius,0, radius, true),
+            new Point(-tao * radius,0, radius, true),
+            new Point(tao * radius,0,-radius, true),
+            new Point(-tao * radius,0,-radius, true)
         };
 
         Triangle[] fces = new Triangle[]
@@ -146,6 +134,7 @@ public class Hexasphere
             Color c = colors[i];
             p.setColor(c);
             points.add(p);
+            p.setIndex(i);
         }
 
         for(Triangle f : fces)
@@ -153,8 +142,19 @@ public class Hexasphere
             faces.add(f);
         }
 
-        handleOriginalIcosahedron(pnts, fces);
+        //handleOriginalIcosahedron(pnts, fces);
     }
+
+    /*private void handleOriginalIcosahedron(Point[] pnts, Triangle[] tris)
+    {
+        for(Triangle tri : tris)
+        {
+            pnts[tri.getIdx1()].setIndex(tri.getIdx1());
+            pnts[tri.getIdx2()].setIndex(tri.getIdx2());
+            pnts[tri.getIdx3()].setIndex(tri.getIdx3());
+        }
+    }*/
+
 
     //https://stackoverflow.com/questions/10473852/convert-latitude-and-longitude-to-point-in-3d-space
     public void tileIcosphere()
@@ -169,8 +169,34 @@ public class Hexasphere
             float lon = azimuthAngle * 180f / MathUtils.PI;
             tile.setLatLon(lat, lon);
             tiles.add(tile);
+            if(p.isOriginal())
+                tile.setTileType(IcoSphereTile.TileType.DESERT);
             //tiles.put(tile.getLatLon(), tile);
             //IcoSphereTile(this, points.get(i), IcoSphereTile.TileType.GRASS);
+        }
+    }
+
+    public void desertifyOriginals()
+    {
+        for(IcoSphereTile t : tiles)
+        {
+            if(t.getPoint().isOriginal())
+            {
+                t.setTileType(IcoSphereTile.TileType.DESERT);
+            }
+        }
+    }
+
+    public void grassifyNonOriginals()
+    {
+        int ctr = 0;
+        for(IcoSphereTile t : tiles)
+        {
+            if(!t.getPoint().isOriginal() && ctr % 2 == 0)
+                t.setTileType(IcoSphereTile.TileType.GRASS);
+            else if(!t.getPoint().isOriginal() && ctr % 2 == 1)
+                t.setTileType(IcoSphereTile.TileType.MOUNTAIN);
+            ctr++;
         }
     }
 
@@ -221,7 +247,7 @@ public class Hexasphere
         }
         this.mesh = b.end();
         modelBuilder.begin();
-        modelBuilder.part("world", mesh,  GL20.GL_TRIANGLES, new Material(/*ColorAttribute.createDiffuse(Color.WHITE)*/));
+        modelBuilder.part("world", mesh,  /*GL20.GL_TRIANGLES*/ GL20.GL_TRIANGLES, new Material(/*ColorAttribute.createDiffuse(Color.WHITE)*/));
         this.model = modelBuilder.end();
     }
 
@@ -326,8 +352,10 @@ public class Hexasphere
                 continue;
             }
             curDistance = tile.getPoint().getPosition().dst(x, y, z);
-            if(curDistance < lastDistance)
+            if(curDistance < lastDistance) {
                 closestTile = tile;
+                lastDistance = curDistance;
+            }
         }
         return closestTile;
     }
@@ -448,7 +476,7 @@ public class Hexasphere
     {
         for(int i = 0; i < tiles.size; i++)
         {
-            if(i % 2 == 0)
+            if(i % 2 == 1)
                 tiles.get(i).setTileType(IcoSphereTile.TileType.GRASS);
         }
     }
