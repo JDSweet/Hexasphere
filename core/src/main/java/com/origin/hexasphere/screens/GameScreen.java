@@ -164,7 +164,7 @@ public class GameScreen implements Screen, InputProcessor
         // fumbles a bit when the camera is not directly facing a tile.
         // It basically gets the user's touch position, and uses the camera to
         // get the world coordinate of a tile, and uses that world coordinate to look up the tile.
-        Vector3 touchPos = new Vector3(screenX, screenY, 0f);
+        /*Vector3 touchPos = new Vector3(screenX, screenY, 0f);
         Gdx.app.log("TouchPos", touchPos.toString());
 
         Vector3 projectedTouchPos = cam.unproject(touchPos);
@@ -173,7 +173,14 @@ public class GameScreen implements Screen, InputProcessor
 
         Vector3 rayCastOutput = sr.rayCastToSphere(projectedTouchPos, hexasphere.getCenter(), cam.direction, hexasphere.getRadius());
         Gdx.app.log("Raycast Output Debug", rayCastOutput.toString());
-        Gdx.app.log("Camera Direction Debug", cam.direction.toString());
+        Gdx.app.log("Camera Direction Debug", cam.direction.toString());*/
+
+        Vector3 touchPos = new Vector3(screenX, screenY, 0f);
+        Vector3 projTouchPos = cam.unproject(touchPos);
+        Vector3 touchRay = cam.direction.cpy().sub(projTouchPos); // Get direction from touch to camera
+
+        //sr.rayCastToSphere()
+        Vector3 rayCastOutput = sr.rayCastToSphere(cam.position, hexasphere.getCenter(), touchRay, hexasphere.getRadius());
 
         // We could also possibly try the reverse of this operation:
 
