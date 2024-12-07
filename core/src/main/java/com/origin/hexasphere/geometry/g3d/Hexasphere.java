@@ -38,13 +38,8 @@ public class Hexasphere
     private float radius;
     private int subdivisions;
     private Queue<IcoSphereTile> tilesToUpdate;
-    //private Octree<IcoSphereTile> tilesOctree;
     private float[] vertices;
 
-    //Organized by latitude and longitude
-    //ArrayMap<Float, ArrayMap<Float, IcoSphereTile>> tiles;
-    //Float2ObjectArrayMap<Float2ObjectArrayMap<IcoSphereTile>> tiles;
-    //ArrayMap<Vector2, IcoSphereTile> tiles;
     Array<IcoSphereTile> tiles;
 
     public Hexasphere(float radius, int subdivisions)
