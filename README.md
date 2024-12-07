@@ -15,6 +15,13 @@ Additionally, I also encountered a similar project (using JMonkeyEngine), but no
 
 I also owe a big one to [this](https://gamedev.stackexchange.com/a/212473/60136) Game Dev Stack Exchange user's answer. Without their help, I would have wasted much more time not understanding how LibGDX's mesh API works than I'd care to admit..
 
+![A map of the globe painted in hexes]()
+
+<p align="center">
+  <img src="https://ibb.co/1f20mH0" width="350" title="The world painted with hexes.">
+  <img src="https://ibb.co/1f20mH0" width="350" alt="The world painted with hexes.">
+</p>
+
 -----------------------------------------------------
 
 
