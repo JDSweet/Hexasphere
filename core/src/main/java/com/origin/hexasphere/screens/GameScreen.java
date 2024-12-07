@@ -1,9 +1,6 @@
 package com.origin.hexasphere.screens;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
@@ -12,17 +9,18 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.math.Octree;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.utils.Logger;
+import com.origin.hexasphere.geometry.g2d.HexasphereGUI;
 import com.origin.hexasphere.geometry.g3d.Hexasphere;
-import com.origin.hexasphere.geometry.g3d.SphereRayCaster;
 import com.origin.hexasphere.tilemap.IcoSphereTile;
 
 /** First screen of the application. Displayed after the application is created. */
 public class GameScreen implements Screen, InputProcessor
 {
+    private InputMultiplexer plexer;
+
     private Mesh mesh;
     private Model model;
     private ShaderProgram shader;
@@ -30,6 +28,7 @@ public class GameScreen implements Screen, InputProcessor
     private PerspectiveCamera cam;
     private ModelInstance modelInstance;
     private Hexasphere hexasphere;
+    private HexasphereGUI gui;
     //private Vector3 facing;
 
     //For whatever reason, the setting the tile color doesn't work when we don't subdivide the hexagon.
@@ -38,6 +37,7 @@ public class GameScreen implements Screen, InputProcessor
     public void show()
     {
         Gdx.app.setLogLevel(Logger.DEBUG);
+        plexer = new InputMultiplexer();
 
         cam = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cam.position.set(10f, 10f, 10f);
@@ -46,18 +46,18 @@ public class GameScreen implements Screen, InputProcessor
         cam.far = 300f;
         cam.update();
         batch = new ModelBatch();
+        gui = new HexasphereGUI();
 
         hexasphere = new Hexasphere(3f, 5);
         hexasphere.debugMesh(false, false);
-        //hexasphere.debugTiles();
         hexasphere.tileIcosphere();
         hexasphere.oceanify();
         hexasphere.debugTiles();
-        //hexasphere.oceanify();
-        //hexasphere.updateGeometry();
         modelInstance = hexasphere.instance();
 
-        Gdx.input.setInputProcessor(this);
+        plexer.addProcessor(this);
+        plexer.addProcessor(gui);
+        Gdx.input.setInputProcessor(plexer);
     }
 
     Vector3 hexPos = new Vector3(0f, 0f, 0f);
@@ -79,7 +79,21 @@ public class GameScreen implements Screen, InputProcessor
 
         hexasphere.update();
 
-        //cam.rotateAround(hexPos, camRotationSpeed, 1f);
+        cam.lookAt(0f, 0f, 0f);
+        cam.update();
+
+        handleKeyInput();
+
+        batch.begin(cam);
+        hexasphere.render(batch);
+        batch.end();
+
+        gui.act();
+        gui.draw();
+    }
+
+    private void handleKeyInput()
+    {
         if(Gdx.input.isKeyPressed(Input.Keys.W))
             cam.rotateAround(hexPos, wCamRotationSpeed, 1f);
         if(Gdx.input.isKeyPressed(Input.Keys.A))
@@ -94,26 +108,6 @@ public class GameScreen implements Screen, InputProcessor
         if(Gdx.input.isKeyPressed(Input.Keys.BACKSPACE))
             if(hexasphere.getCenter().dst(cam.position) < maxCamZoom)
                 cam.position.add(newDir.set(cam.direction).scl(-camZoomAmnt));
-        if(Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-            hexasphere.oceanify();
-            hexasphere.desertifyOriginals();
-            //hexasphere.grassifyNonOriginals();
-        }
-        cam.lookAt(0f, 0f, 0f);
-            //cam.position.set(cam.position.x+cam.direction.x, cam.position.y+cam.direction.y, cam.position.z-+cam.direction.z);
-
-
-        //cam.position.x += 0.01f;
-        //cam.position.y += 0.01f;
-        //cam.position.z += 0.01f;
-        //cam.rotate(1f, 1f, 0f, 1f);
-
-        //cam.lookAt(0, 0, 0);
-        cam.update();
-
-        batch.begin(cam);
-        batch.render(modelInstance);
-        batch.end();
     }
 
     @Override
@@ -143,6 +137,13 @@ public class GameScreen implements Screen, InputProcessor
 
     @Override
     public boolean keyDown(int keycode) {
+        if(gui.isEditingEnabled())
+        {
+            if(keycode == Input.Keys.SPACE) {
+                hexasphere.oceanify();
+                hexasphere.desertifyOriginals();
+            }
+        }
         return false;
     }
 
@@ -153,10 +154,10 @@ public class GameScreen implements Screen, InputProcessor
 
     @Override
     public boolean keyTyped(char character) {
-        return false;
+
+        return true;
     }
 
-    SphereRayCaster sr = new SphereRayCaster();
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button)
     {
@@ -191,14 +192,20 @@ public class GameScreen implements Screen, InputProcessor
         ;*/
         //hexasphere.everyOther();
 
-        Ray ray = cam.getPickRay(screenX, screenY);
-        Vector3 intersection = new Vector3();
-        boolean intersects = Intersector.intersectRaySphere(ray, hexasphere.getCenter(), hexasphere.getRadius(), intersection);
-        if(intersects)
+        // Okay, so eventually I stumbled into pick rays.
+        // A pick-ray is basically a ray extending from the camera's viewport.
+        // So, if we pass a pick-ray to Intersector, it correctly translates from 2D click space into the 3D position of whatever was touched.
+        if(gui.isEditingEnabled())
         {
-            IcoSphereTile touched = hexasphere.getClosestTile(intersection);
-            touched.setTileType(IcoSphereTile.TileType.GRASS);
-            return true;
+            Ray ray = cam.getPickRay(screenX, screenY);
+            Vector3 intersection = new Vector3();
+            boolean intersects = Intersector.intersectRaySphere(ray, hexasphere.getCenter(), hexasphere.getRadius(), intersection);
+            if(intersects)
+            {
+                IcoSphereTile touched = hexasphere.getClosestTile(intersection);
+                touched.setTileType(gui.getSelection());
+                return true;
+            }
         }
         return false;
     }
