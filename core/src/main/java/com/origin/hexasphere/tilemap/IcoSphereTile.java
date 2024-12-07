@@ -47,6 +47,22 @@ public class IcoSphereTile
         return type.getColor();
     }
 
+    public void setTileType(String type)
+    {
+        if(type.equalsIgnoreCase("grass"))
+            setTileType(TileType.GRASS);
+        else if(type.equalsIgnoreCase("mountain"))
+            setTileType(TileType.MOUNTAIN);
+        else if(type.equalsIgnoreCase("hill"))
+            setTileType(TileType.HILLS);
+        else if(type.equalsIgnoreCase("ocean"))
+            setTileType(TileType.OCEAN);
+        else if(type.equalsIgnoreCase("desert"))
+            setTileType(TileType.DESERT);
+        else
+            setTileType(TileType.GRASS);
+    }
+
     public void setTileType(TileType type)
     {
         this.type = type;
