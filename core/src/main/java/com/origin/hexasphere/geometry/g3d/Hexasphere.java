@@ -4,18 +4,14 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
+import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Octree;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ArrayMap;
-import com.badlogic.gdx.utils.BinaryHeap;
 import com.badlogic.gdx.utils.Queue;
 import com.origin.hexasphere.tilemap.IcoSphereTile;
 
@@ -29,6 +25,7 @@ public class Hexasphere
     private Array<Triangle> faces;
     private Mesh mesh;
     private Model model;
+    private ModelInstance instance;
     private float radius;
     private int subdivisions;
     private Queue<IcoSphereTile> tilesToUpdate;
@@ -58,6 +55,8 @@ public class Hexasphere
         //tileIcosphere();
 
         buildMesh();
+
+        this.instance = instance();
 
         cacheVertexData();
     }
@@ -287,6 +286,10 @@ public class Hexasphere
 
     // Adds the point and returns its index if it does not exist.
     // Returns the index of the point if it does exist.
+    // Note: If the circle's radius is too small or large for a given number of subdivisions, point comparisons begin to return
+    // false positives because of floating point imprecision. This leads to the resulting sphere being generally correct
+    // (insofar as it is, visually, a sphere), but it leads to the generation of weird artifacts, and the improper
+    // rendering of tiles or anything that heavily relies on the correct construction of triangles and vertex positions.
     public int addPointIfDoesNotExist(Point point)
     {
         int retval = -1;
@@ -306,9 +309,6 @@ public class Hexasphere
             retval = points.size - 1;
             //Gdx.app.debug("Hexasphere", "Point " + point.getPosition() + " does not exist! Returning " + retval);
         }
-        //points.add(point);
-        //return points.size - 1;
-
         return retval;
     }
 
@@ -318,9 +318,6 @@ public class Hexasphere
         {
             t.setTileType(IcoSphereTile.TileType.OCEAN);
         }
-
-        /*for(IcoSphereTile t : tiles.values())
-            t.setTileType(IcoSphereTile.TileType.OCEAN);*/
     }
 
     public void grassify()
@@ -360,21 +357,26 @@ public class Hexasphere
         return closestTile;
     }
 
+    public void render(ModelBatch batch)
+    {
+        batch.render(instance);
+    }
+
     public void update()
     {
-        if(isDirty())
+        if(isTileMapDirty())
         {
-            updateGeometry();
+            updateTileGeometry();
         }
     }
 
-    private boolean isDirty()
+    private boolean isTileMapDirty()
     {
         return this.tilesToUpdate.notEmpty();
     }
 
     //This method updates the color of the vertex associated with any tile that has changed since the last update.
-    public void updateGeometry()
+    public void updateTileGeometry()
     {
         while(this.tilesToUpdate.notEmpty())
         {
