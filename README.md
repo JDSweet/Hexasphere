@@ -17,10 +17,7 @@ I also owe a big one to [this](https://gamedev.stackexchange.com/a/212473/60136)
 
 ![A map of the globe painted in hexes]()
 
-<p align="center">
-  <img src="https://ibb.co/1f20mH0" width="350" title="The world painted with hexes.">
-  <img src="https://ibb.co/1f20mH0" width="350" alt="The world painted with hexes.">
-</p>
+<img src="https://i.ibb.co/Z6TfMyf/hexasphereeditor.png" alt="hexasphereeditor" border="0">
 
 -----------------------------------------------------
 
