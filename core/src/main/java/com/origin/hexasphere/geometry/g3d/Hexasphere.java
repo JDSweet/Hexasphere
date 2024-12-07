@@ -43,7 +43,7 @@ public class Hexasphere
         points = new Array<Point>(true, 12);
         faces = new Array<Triangle>(true, 20);
         this.tilesToUpdate = new Queue<>();
-        this.tiles = new Array<IcoSphereTile>();
+        this.tiles = new Array<IcoSphereTile>(true, 15000);
         this.center = new Vector3(0f, 0f, 0f);
         this.subdivisions = subdivisions;
         this.radius = radius;
@@ -52,14 +52,158 @@ public class Hexasphere
 
         subdivide(this.subdivisions);
 
-        //tileIcosphere();
+        tileIcosphere();
+
+        createAdjacencies();
 
         buildMesh();
 
         this.instance = instance();
 
         cacheVertexData();
+
+        //debugAdjacencies();
+
+        //debugIndices();
     }
+
+    public void createAdjacencies()
+    {
+        for(int i = 0; i < tiles.size; i++)
+        {
+            IcoSphereTile t = tiles.get(i);
+            Point p = t.getPoint();
+            for(int j = 0; j < faces.size; j++)
+            {
+                Triangle f = faces.get(j);
+                if(p.getIndex() == f.getIdx1())
+                {
+                    p.addAdjacency(f.getIdx2());
+                    p.addAdjacency(f.getIdx3());
+                }
+                if(p.getIndex() == f.getIdx2())
+                {
+                    p.addAdjacency(f.getIdx1());
+                    p.addAdjacency(f.getIdx3());
+                }
+                if(p.getIndex() == f.getIdx3())
+                {
+                    p.addAdjacency(f.getIdx1());
+                    p.addAdjacency(f.getIdx2());
+                }
+            }
+            t.createAdjacencies();
+            //Gdx.app.log("Adjacency Count for Tile " + t.getID(), t.getAdjacencies().size);
+        }
+    }
+
+    /*public void debugIndices()
+    {
+        StringBuilder bldr = new StringBuilder();
+        for(int i = 0; i < tiles.size; i++)
+        {
+            bldr.append("Index ");
+            bldr.append(i);
+            bldr.append(": ");
+            bldr.append(getIndexOccurrences(i));
+            bldr.append("\n");
+        }
+        Gdx.app.log("Index Debug", bldr.toString());
+    }
+
+    public int getIndexOccurrences(int search)
+    {
+        int occur = 0;
+        for(int i = 0; i < faces.size; i++)
+        {
+            Triangle face = faces.get(i);
+            if(face.getIdx1() == search)
+                occur++;
+            if(face.getIdx2() == search)
+                occur++;
+            if(face.getIdx3() == search)
+                occur++;
+        }
+        return occur;
+    }
+
+    public void debugAdjacencies()
+    {
+        for(int i = 0; i < points.size; i++)
+        {
+            IntArray adj = getPointAt(i).getAdjacencies();
+            for(int j = 0; j < adj.size; j++)
+            {
+                Gdx.app.log("Adj Debug", "" + j);
+                getTileAt(j).setTileType(IcoSphereTile.TileType.HILLS);
+            }
+        }
+    }
+
+    private void createPointAdjacencies()
+    {
+        for(Triangle t : faces)
+        {
+            t.getPoint1().addAdjacency(t.getIdx3());
+            t.getPoint1().addAdjacency(t.getIdx2());
+
+            t.getPoint2().addAdjacency(t.getIdx3());
+            t.getPoint2().addAdjacency(t.getIdx1());
+
+            t.getPoint3().addAdjacency(t.getIdx2());
+            t.getPoint3().addAdjacency(t.getIdx1());
+        }
+    }
+
+    private void createTileAdjacencies()
+    {
+        for(IcoSphereTile t : tiles)
+        {
+            t.createAdjacencies();
+        }
+    }*/
+
+    //For every point a
+    //      for every triangle b,
+    //          if a is in b then
+    //              Add the other points in b to a.
+    /*private void createPointAdjacencies()
+    {
+        for(int i = 0; i < points.size; i++)
+        {
+            Point a = getPointAt(i);
+            for(int j = 0; j < faces.size; j++)
+            {
+                Triangle face = faces.get(j);
+                if(face.containsPoint(a))
+                {
+                    Point f1 = face.getPoint1();
+                    Point f2 = face.getPoint2();
+                    Point f3 = face.getPoint3();
+                    if(a.equals(f1))
+                    {
+                        a.addAdjacency(f2.getIndex());
+                        a.addAdjacency(f3.getIndex());
+                    }
+                    else if(a.equals(f2))
+                    {
+                        a.addAdjacency(f1.getIndex());
+                        a.addAdjacency(f3.getIndex());
+                    }
+                    else if(a.equals(f3))
+                    {
+                        a.addAdjacency(f2.getIndex());
+                        a.addAdjacency(f1.getIndex());
+                    }
+                }
+            }
+        }
+
+        for(IcoSphereTile tile : tiles)
+        {
+            tile.createPointAdjacencies();
+        }
+    }*/
 
     //Based on the following articles:
     //      1. http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
@@ -273,8 +417,14 @@ public class Hexasphere
 
         Triangle tri = new Triangle(this, p1Idx, p2Idx, p3Idx);
         faces.add(tri);
+
+        //Point 1
         getPointAt(tri.getIdx1()).setIndex(tri.getIdx1());
+
+        //Point 2
         getPointAt(tri.getIdx2()).setIndex(tri.getIdx2());
+
+        //Point 3
         getPointAt(tri.getIdx3()).setIndex(tri.getIdx3());
     }
 
@@ -355,6 +505,11 @@ public class Hexasphere
             }
         }
         return closestTile;
+    }
+
+    public IcoSphereTile getTileAt(int index)
+    {
+        return tiles.get(index);
     }
 
     public void render(ModelBatch batch)

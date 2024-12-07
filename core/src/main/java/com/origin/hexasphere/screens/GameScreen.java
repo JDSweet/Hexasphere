@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Logger;
 import com.origin.hexasphere.geometry.g2d.HexasphereGUI;
 import com.origin.hexasphere.geometry.g3d.Hexasphere;
@@ -49,8 +50,6 @@ public class GameScreen implements Screen, InputProcessor
         gui = new HexasphereGUI();
 
         hexasphere = new Hexasphere(3f, 5);
-        hexasphere.debugMesh(false, false);
-        hexasphere.tileIcosphere();
         hexasphere.oceanify();
         hexasphere.debugTiles();
         modelInstance = hexasphere.instance();
@@ -204,6 +203,11 @@ public class GameScreen implements Screen, InputProcessor
             {
                 IcoSphereTile touched = hexasphere.getClosestTile(intersection);
                 touched.setTileType(gui.getSelection());
+                Array<IcoSphereTile> neighbors = touched.getAdjacencies();
+                for(IcoSphereTile nbr : neighbors)
+                {
+                    nbr.setTileType(gui.getSelection());
+                }
                 return true;
             }
         }

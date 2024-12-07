@@ -2,6 +2,7 @@ package com.origin.hexasphere.geometry.g3d;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.IntArray;
 
 import java.util.Objects;
 
@@ -12,6 +13,7 @@ public class Point
     private Color color;
     private int index;
     private boolean isOriginal;
+    private IntArray adjacencies;
 
     public Point(float x, float y, float z, boolean isOriginal)
     {
@@ -28,6 +30,7 @@ public class Point
         this.position = position;
         this.color = color;
         this.isOriginal = isOriginal;
+        this.adjacencies = new IntArray();
     }
 
     public void setIndex(int idx)
@@ -64,7 +67,18 @@ public class Point
     public boolean equals(Object other)
     {
         Point otherPnt = (Point)other;
-        return this.position.epsilonEquals(otherPnt.getPosition(), 0.01f);
+        return other == this || this.position.epsilonEquals(otherPnt.getPosition(), 0.01f);
+    }
+
+    public void addAdjacency(int idx)
+    {
+        if(!adjacencies.contains(idx))
+            adjacencies.add(idx);
+    }
+
+    public IntArray getAdjacencies()
+    {
+        return adjacencies;
     }
 
     @Override

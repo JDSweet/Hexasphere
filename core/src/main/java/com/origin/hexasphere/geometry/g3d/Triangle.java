@@ -60,7 +60,7 @@ public class Triangle
         hexasphere.addRawTriangle(p4, p6, p5);
         hexasphere.addRawTriangle(p6, p4, p2);
 
-        //hexasphere.removeTriangle(this);
+        hexasphere.removeTriangle(this);
     }
 
     private Point getMidPoint(Point p1, Point p2)
@@ -95,6 +95,12 @@ public class Triangle
         //objVector.y /= magnitude; //* hexasphere.getRadius();
         //objVector.z /= magnitude; //* hexasphere.getRadius();
         //objVector.set(objVector.dst(centerVector));*/
+    }
+
+    public boolean containsPoint(Point p)
+    {
+        return p.equals(getPoint1()) || p.equals(getPoint2()) || p.equals(getPoint3()) ||
+                p == getPoint1() || p == getPoint2() || p == getPoint3();
     }
 
     public Point getPoint1()

@@ -1,7 +1,11 @@
 package com.origin.hexasphere.tilemap;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
+
+import com.badlogic.gdx.utils.IntArray;
 import com.origin.hexasphere.coordinates.LatLon;
 import com.origin.hexasphere.geometry.g3d.Hexasphere;
 import com.origin.hexasphere.geometry.g3d.Point;
@@ -14,6 +18,7 @@ public class IcoSphereTile
     private TileType type;
     private LatLon latLon;
     private int id;
+    private Array<IcoSphereTile> neighbors;
 
     private static int maxTileID = 0;
 
@@ -25,6 +30,22 @@ public class IcoSphereTile
         point.setColor(type.getColor());
         this.latLon = new LatLon();
         this.id = maxTileID++;
+        this.neighbors = new Array<>();
+    }
+
+    public void createAdjacencies()
+    {
+        IntArray pointAdjacencies = this.getPoint().getAdjacencies();
+        Gdx.app.log("Adjacency Debug", "" + pointAdjacencies.size);
+        for(int i = 0; i < pointAdjacencies.size; i++)
+        {
+            this.neighbors.add(world.getTileAt(pointAdjacencies.get(i)));
+        }
+    }
+
+    public Array<IcoSphereTile> getAdjacencies()
+    {
+        return this.neighbors;
     }
 
     public void setLatLon(float lat, float lon)
@@ -62,6 +83,8 @@ public class IcoSphereTile
         else
             setTileType(TileType.GRASS);
     }
+
+
 
     public void setTileType(TileType type)
     {
