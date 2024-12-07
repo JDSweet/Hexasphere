@@ -17,7 +17,16 @@ import com.origin.hexasphere.tilemap.IcoSphereTile;
 
 //Read THIS: https://web.archive.org/web/20180808214504/http://donhavey.com:80/blog/tutorials/tutorial-3-the-icosahedron-sphere/
 
-
+/*
+* Known issues:
+*   1. The maximum number of cells is rather small compared to the implementation this is derived from.
+*       This issue stems from LibGDX's use of signed shorts for indices (as Java lacks unsigned shorts).
+*       As a result, the only way to increase the resolution would be to divide the mesh into chunks
+*       (perhaps one chunk per original pentagonal face?) and to subdivide these chunks. This would dramatically
+*       complicate the process of creating geometry (as we'd now have to track all occurrences of the same Point
+*       in each mesh, and modify all meshes that a point occurs in when we want to make a change, because there would
+*       be some overlap).
+* */
 public class Hexasphere
 {
     private Vector3 center;
