@@ -13,7 +13,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Logger;
-import com.origin.hexasphere.geometry.g2d.HexasphereGUI;
+import com.origin.hexasphere.gui.HexasphereGUI;
 import com.origin.hexasphere.geometry.g3d.Hexasphere;
 import com.origin.hexasphere.tilemap.IcoSphereTile;
 

@@ -1,4 +1,4 @@
-package com.origin.hexasphere.geometry.g2d;
+package com.origin.hexasphere.gui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
