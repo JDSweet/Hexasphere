@@ -11,8 +11,10 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Octree;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.utils.Logger;
 import com.origin.hexasphere.geometry.g3d.Hexasphere;
 import com.origin.hexasphere.geometry.g3d.SphereRayCaster;
@@ -45,7 +47,7 @@ public class GameScreen implements Screen, InputProcessor
         cam.update();
         batch = new ModelBatch();
 
-        hexasphere = new Hexasphere(3f, 4);
+        hexasphere = new Hexasphere(3f, 5);
         hexasphere.debugMesh(false, false);
         //hexasphere.debugTiles();
         hexasphere.tileIcosphere();
@@ -175,7 +177,7 @@ public class GameScreen implements Screen, InputProcessor
         Gdx.app.log("Raycast Output Debug", rayCastOutput.toString());
         Gdx.app.log("Camera Direction Debug", cam.direction.toString());*/
 
-        Vector3 touchPos = new Vector3(screenX, screenY, 0f);
+        /*Vector3 touchPos = new Vector3(screenX, screenY, 0f);
         Vector3 projTouchPos = cam.unproject(touchPos);
         Vector3 touchRay = cam.direction.cpy().sub(projTouchPos); // Get direction from touch to camera
 
@@ -186,9 +188,19 @@ public class GameScreen implements Screen, InputProcessor
 
         IcoSphereTile touched = hexasphere.getClosestTile(hexasphere.projectToSphere(rayCastOutput));
         touched.setTileType(IcoSphereTile.TileType.GRASS);
-        ;
+        ;*/
         //hexasphere.everyOther();
-        return true;
+
+        Ray ray = cam.getPickRay(screenX, screenY);
+        Vector3 intersection = new Vector3();
+        boolean intersects = Intersector.intersectRaySphere(ray, hexasphere.getCenter(), hexasphere.getRadius(), intersection);
+        if(intersects)
+        {
+            IcoSphereTile touched = hexasphere.getClosestTile(intersection);
+            touched.setTileType(IcoSphereTile.TileType.GRASS);
+            return true;
+        }
+        return false;
     }
 
     @Override
