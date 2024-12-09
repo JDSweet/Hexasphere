@@ -2,6 +2,22 @@
 
 This is a libGDX port of [Hexasphere.js](https://github.com/arscan/hexasphere.js/).
 
+Current features implemented:
+  1. Icosphere generation (up to 5 subdivisions supported - any more and we overflow the maximum mesh size).
+  2. Tile map generation from the icosphere.
+  3. Dynamic coloration of the tile-map based on "terrain."
+  4. Cell adjacency detection (every cell has a list of all of its neighbors).
+
+Future features to work on:
+  1. Experiment with chunking the globe to allow higher resolutions/more subdivisions.
+  2. Experiment with increasing the vertex resolution of individual cells (to allow more complicated terrain generation).
+  3. Add the ability to place objects on the hex map.
+  4. Add the ability to pathfind on the hex map using A*
+  5. Add a noise-based terrain generation system.
+  6. Add clouds with cool shaders.
+  7. Add fog of war.
+  8. Add the ability to dynamically move objects between cells correctly on the map.
+
 In the process of creating this, I've learned a lot about procedural mesh generation. These sources helped me make this port:
 
 1. https://observablehq.com/@mourner/fast-icosphere-mesh
@@ -14,8 +30,6 @@ In the process of creating this, I've learned a lot about procedural mesh genera
 Additionally, I also encountered a similar project (using JMonkeyEngine), but none of the code was "usable," and it mostly serves as a stylistic inspiration for what I'm going for once I implement the hexagonal tile map. [The project in question is hosted on Sourceforge](https://sourceforge.net/projects/hexmapsphere/).
 
 I also owe a big one to [this](https://gamedev.stackexchange.com/a/212473/60136) Game Dev Stack Exchange user's answer. Without their help, I would have wasted much more time not understanding how LibGDX's mesh API works than I'd care to admit..
-
-![A map of the globe painted in hexes]()
 
 <img src="https://i.ibb.co/Z6TfMyf/hexasphereeditor.png" alt="hexasphereeditor" border="0">
 
